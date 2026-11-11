@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,7 @@ import org.openqa.selenium.docker.DockerException;
 import org.openqa.selenium.docker.Image;
 import org.openqa.selenium.grid.config.Config;
 import org.openqa.selenium.grid.config.ConfigException;
+import org.openqa.selenium.grid.node.Node;
 import org.openqa.selenium.grid.node.SessionFactory;
 import org.openqa.selenium.grid.node.config.NodeOptions;
 import org.openqa.selenium.internal.Multimap;
@@ -142,7 +144,10 @@ public class DockerOptions {
   }
 
   public Map<Capabilities, Collection<SessionFactory>> getDockerSessionFactories(
-      Tracer tracer, HttpClient.Factory clientFactory, NodeOptions options) {
+      Tracer tracer,
+      HttpClient.Factory clientFactory,
+      NodeOptions options,
+      Supplier<@Nullable Node> node) {
 
     HttpClient client =
         clientFactory.createClient(ClientConfig.defaultConfig().baseUri(getDockerUri()));
@@ -195,6 +200,22 @@ public class DockerOptions {
       loadImages(docker, Set.of(videoImage.getName()));
     }
 
+    DockerContainers containers =
+        new DockerContainers(
+            devicesMapping,
+            videoImage,
+            assetsPath,
+            networkName,
+            info.isPresent(),
+            hostConfig,
+            hostConfigKeys,
+            groupingLabels);
+
+    // Every Docker session runs as a Temporal Workflow, so the Node cannot start without it.
+    DockerSessionRunner runner =
+        DockerSessionWorker.start(
+            new TemporalOptions(config), docker, clientFactory, containers, node);
+
     // Hard coding the config section value "node" to avoid an extra dependency
     int maxContainerCount =
         Math.min(
@@ -212,19 +233,12 @@ public class DockerOptions {
                 clientFactory,
                 options.getSessionTimeout(),
                 getServerStartTimeout(),
-                docker,
+                runner,
+                containers,
                 getDockerUri(),
                 image,
                 caps,
-                devicesMapping,
-                videoImage,
-                assetsPath,
-                networkName,
-                info.isPresent(),
                 capabilities -> options.getSlotMatcher().matches(caps, capabilities),
-                hostConfig,
-                hostConfigKeys,
-                groupingLabels,
                 stopGracePeriod));
       }
       LOG.info(

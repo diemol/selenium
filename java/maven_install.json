@@ -47,6 +47,9 @@
     "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure": 2007780383,
     "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi": -62380802,
     "io.opentelemetry:opentelemetry-sdk-trace": 1165401435,
+    "io.temporal:temporal-sdk": -370564544,
+    "io.temporal:temporal-serviceclient": -663875974,
+    "io.temporal:temporal-testing": 1205974314,
     "junit:junit": -744267592,
     "net.bytebuddy:byte-buddy": 164807332,
     "net.java.dev.javacc:javacc": 520686333,
@@ -89,6 +92,8 @@
     "cglib:cglib-nodep:jar:sources": 193544996,
     "com.beust:jcommander": -2120169146,
     "com.beust:jcommander:jar:sources": -171511633,
+    "com.cronutils:cron-utils": 535031917,
+    "com.cronutils:cron-utils:jar:sources": -1199917399,
     "com.esotericsoftware:kryo": -693368450,
     "com.esotericsoftware:kryo:jar:sources": 1494540957,
     "com.esotericsoftware:minlog": -2001219566,
@@ -103,6 +108,8 @@
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": 869519278,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1628828367,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 380981259,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": -1628652970,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": 1685815265,
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": -1069648110,
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:sources": -1374881393,
     "com.github.ben-manes.caffeine:caffeine": -1626319201,
@@ -121,6 +128,10 @@
     "com.github.spotbugs:spotbugs:jar:sources": 122229878,
     "com.github.stephenc.jcip:jcip-annotations": 2084352561,
     "com.github.stephenc.jcip:jcip-annotations:jar:sources": 888192437,
+    "com.google.android:annotations": 2096496032,
+    "com.google.android:annotations:jar:sources": -1797343139,
+    "com.google.api.grpc:proto-google-common-protos": -1116744821,
+    "com.google.api.grpc:proto-google-common-protos:jar:sources": 194410419,
     "com.google.auto.service:auto-service": -1349947971,
     "com.google.auto.service:auto-service-annotations": 262983930,
     "com.google.auto.service:auto-service-annotations:jar:sources": -1392999316,
@@ -158,11 +169,17 @@
     "com.google.protobuf.nano:protobuf-javanano": -942503907,
     "com.google.protobuf.nano:protobuf-javanano:jar:sources": -1736685757,
     "com.google.protobuf:protobuf-java": -1812001120,
+    "com.google.protobuf:protobuf-java-util": 288149322,
+    "com.google.protobuf:protobuf-java-util:jar:sources": 799127235,
     "com.google.protobuf:protobuf-java:jar:sources": -322237137,
     "com.graphql-java:graphql-java": 1178948131,
     "com.graphql-java:graphql-java:jar:sources": 250541727,
     "com.graphql-java:java-dataloader": -1517887665,
     "com.graphql-java:java-dataloader:jar:sources": -1676833358,
+    "com.jayway.jsonpath:json-path": 1580008002,
+    "com.jayway.jsonpath:json-path:jar:sources": -264118063,
+    "com.uber.m3:tally-core": -755394878,
+    "com.uber.m3:tally-core:jar:sources": 171452192,
     "com.uber.nullaway:nullaway": 749868116,
     "com.uber.nullaway:nullaway:jar:sources": 423253002,
     "commons-codec:commons-codec": 1545666683,
@@ -225,8 +242,30 @@
     "io.fabric8:kubernetes-model-storageclass:jar:sources": 432103442,
     "io.fabric8:zjsonpatch": 1590032399,
     "io.fabric8:zjsonpatch:jar:sources": -146843037,
+    "io.grpc:grpc-api": 590959899,
+    "io.grpc:grpc-api:jar:sources": -1101738242,
+    "io.grpc:grpc-context": 1150594588,
+    "io.grpc:grpc-context:jar:sources": 1895696533,
+    "io.grpc:grpc-core": -2027355239,
+    "io.grpc:grpc-core:jar:sources": 547858449,
+    "io.grpc:grpc-inprocess": -1637785749,
+    "io.grpc:grpc-inprocess:jar:sources": -42930404,
+    "io.grpc:grpc-netty-shaded": -1165020896,
+    "io.grpc:grpc-netty-shaded:jar:sources": 1895696533,
+    "io.grpc:grpc-protobuf": -115614018,
+    "io.grpc:grpc-protobuf-lite": 464419483,
+    "io.grpc:grpc-protobuf-lite:jar:sources": 1659917998,
+    "io.grpc:grpc-protobuf:jar:sources": -248698056,
+    "io.grpc:grpc-services": 1261276532,
+    "io.grpc:grpc-services:jar:sources": 1784803537,
+    "io.grpc:grpc-stub": 389429258,
+    "io.grpc:grpc-stub:jar:sources": 1917900374,
+    "io.grpc:grpc-util": 1695035914,
+    "io.grpc:grpc-util:jar:sources": 1949897981,
     "io.lettuce:lettuce-core": -283713301,
     "io.lettuce:lettuce-core:jar:sources": 2132126069,
+    "io.micrometer:micrometer-core": -44514358,
+    "io.micrometer:micrometer-core:jar:sources": -1332721508,
     "io.netty:netty-buffer": 194929880,
     "io.netty:netty-buffer:jar:sources": 663342431,
     "io.netty:netty-codec": -648071766,
@@ -263,6 +302,8 @@
     "io.netty:netty-transport-native-unix-common": 1696334627,
     "io.netty:netty-transport-native-unix-common:jar:sources": -1718628960,
     "io.netty:netty-transport:jar:sources": 1988867824,
+    "io.nexusrpc:nexus-sdk": -1993793117,
+    "io.nexusrpc:nexus-sdk:jar:sources": 2014497716,
     "io.opentelemetry.semconv:opentelemetry-semconv": 216316849,
     "io.opentelemetry.semconv:opentelemetry-semconv:jar:sources": -1308379394,
     "io.opentelemetry:opentelemetry-api": 35575868,
@@ -287,10 +328,20 @@
     "io.opentelemetry:opentelemetry-sdk-trace": -19974944,
     "io.opentelemetry:opentelemetry-sdk-trace:jar:sources": -1852071164,
     "io.opentelemetry:opentelemetry-sdk:jar:sources": 1536420409,
+    "io.perfmark:perfmark-api": -1795841558,
+    "io.perfmark:perfmark-api:jar:sources": -1882329067,
     "io.projectreactor:reactor-core": -2143467537,
     "io.projectreactor:reactor-core:jar:sources": 1595441070,
     "io.reactivex.rxjava3:rxjava": -320548188,
     "io.reactivex.rxjava3:rxjava:jar:sources": 1421703233,
+    "io.temporal:temporal-sdk": 788063164,
+    "io.temporal:temporal-sdk:jar:sources": 155843350,
+    "io.temporal:temporal-serviceclient": 721443347,
+    "io.temporal:temporal-serviceclient:jar:sources": -112496844,
+    "io.temporal:temporal-test-server": 1724869220,
+    "io.temporal:temporal-test-server:jar:sources": -927050681,
+    "io.temporal:temporal-testing": -1097261065,
+    "io.temporal:temporal-testing:jar:sources": -733978054,
     "io.vertx:vertx-auth-common": -192756699,
     "io.vertx:vertx-auth-common:jar:sources": 2025604333,
     "io.vertx:vertx-core": 138818202,
@@ -315,6 +366,10 @@
     "net.java.dev.javacc:javacc:jar:sources": -1183405047,
     "net.java.dev.jna:jna": 154162148,
     "net.java.dev.jna:jna:jar:sources": -1131590933,
+    "net.minidev:accessors-smart": 1266579855,
+    "net.minidev:accessors-smart:jar:sources": 760791190,
+    "net.minidev:json-smart": -1937648411,
+    "net.minidev:json-smart:jar:sources": 1056838733,
     "net.sf.saxon:Saxon-HE": 1404898280,
     "net.sf.saxon:Saxon-HE:jar:sources": 37033699,
     "org.apache.bcel:bcel": -1563530983,
@@ -347,6 +402,8 @@
     "org.checkerframework:checker-qual:jar:sources": 1584684922,
     "org.checkerframework:dataflow-nullaway": 1153433772,
     "org.checkerframework:dataflow-nullaway:jar:sources": -434420977,
+    "org.codehaus.mojo:animal-sniffer-annotations": -1619058809,
+    "org.codehaus.mojo:animal-sniffer-annotations:jar:sources": 83684044,
     "org.commonmark:commonmark": 1007679894,
     "org.commonmark:commonmark-ext-gfm-tables": 906481356,
     "org.commonmark:commonmark-ext-gfm-tables:jar:sources": 1402309037,
@@ -357,6 +414,8 @@
     "org.easymock:easymock:jar:sources": 1100555462,
     "org.eclipse.mylyn.github:org.eclipse.egit.github.core": 456751666,
     "org.eclipse.mylyn.github:org.eclipse.egit.github.core:jar:sources": -1002647383,
+    "org.hdrhistogram:HdrHistogram": 352003410,
+    "org.hdrhistogram:HdrHistogram:jar:sources": -447622996,
     "org.hsqldb:hsqldb": 331478029,
     "org.hsqldb:hsqldb:jar:sources": -212896903,
     "org.htmlunit:htmlunit-core-js": -785871742,
@@ -385,6 +444,8 @@
     "org.junit.platform:junit-platform-launcher:jar:sources": 1409824250,
     "org.junit.platform:junit-platform-reporting": 1588112906,
     "org.junit.platform:junit-platform-reporting:jar:sources": 1717223596,
+    "org.latencyutils:LatencyUtils": 130996999,
+    "org.latencyutils:LatencyUtils:jar:sources": -20719320,
     "org.mockito:mockito-core": -1622438436,
     "org.mockito:mockito-core:jar:sources": 1799409451,
     "org.objenesis:objenesis": 1798216877,
@@ -469,6 +530,13 @@
       },
       "version": "1.82"
     },
+    "com.cronutils:cron-utils": {
+      "shasums": {
+        "jar": "02af0e8b2fe93c9fa6eecf97b53b39faae14c5b996356edb132e9fe620013744",
+        "sources": "64f0bbedcf543be22d73b891e02f5bb9e95157beebb1cb8ee3f64209e30c1161"
+      },
+      "version": "9.2.1"
+    },
     "com.esotericsoftware:kryo": {
       "shasums": {
         "jar": "b0c62617e99fa85ea98c602d0844d6800ffa224cb1e3f597358b009a5e83d619",
@@ -515,6 +583,13 @@
       "shasums": {
         "jar": "971bce7e65b63c7f78965c29aa35370143f01e21a420d02bb3cde32069360689",
         "sources": "6abd603d8113befb99115f529361488aca348a3bad00da7bd2059a28fa8980d2"
+      },
+      "version": "2.23.0"
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": {
+      "shasums": {
+        "jar": "90388031bbcc4b732e994085d3c8e7dcd5543a5c455ae6ac52137ab0f05a663b",
+        "sources": "9103b44846452dab9af226bd2bf46a97b0f3a2bdd93dac10c820f8e4177542f0"
       },
       "version": "2.23.0"
     },
@@ -580,6 +655,20 @@
         "sources": "d60bb3bf4e03a5e405f9b16f4c2625de86089d6ce4f999bcc2548dcac090ae19"
       },
       "version": "1.0-1"
+    },
+    "com.google.android:annotations": {
+      "shasums": {
+        "jar": "ba734e1e84c09d615af6a09d33034b4f0442f8772dec120efb376d86a565ae15",
+        "sources": "e9b667aa958df78ea1ad115f7bbac18a5869c3128b1d5043feb360b0cfce9d40"
+      },
+      "version": "4.1.1.4"
+    },
+    "com.google.api.grpc:proto-google-common-protos": {
+      "shasums": {
+        "jar": "9407f50aef5d1cb12675c170fa64ee216023eefca49f8f5eac45124f23a6cb29",
+        "sources": "041dc6e3fcca1c1815ddc28fa2a9371985221de834c22e09d8ad270f1547de98"
+      },
+      "version": "2.59.2"
     },
     "com.google.auto.service:auto-service": {
       "shasums": {
@@ -719,6 +808,13 @@
       },
       "version": "4.36.2"
     },
+    "com.google.protobuf:protobuf-java-util": {
+      "shasums": {
+        "jar": "e7196eaefc3f81afa1571821635c7aefe2933f4be4a9df9e601fb59214b50269",
+        "sources": "ddfec53ff55c50f9017c3f4b9fba20253df6f59b1e5439a8cc74efff0f2366d2"
+      },
+      "version": "3.25.8"
+    },
     "com.graphql-java:graphql-java": {
       "shasums": {
         "jar": "2a87c9b6e64414806696a87a8aab006d32940568299bd6a1fe81c50f9e40f967",
@@ -732,6 +828,20 @@
         "sources": "ea1b61592602f06976ee20026083b79ce7677e28591a12d381e5ac3d56a46170"
       },
       "version": "6.0.0"
+    },
+    "com.jayway.jsonpath:json-path": {
+      "shasums": {
+        "jar": "11a9ee6f88bb31f1450108d1cf6441377dec84aca075eb6bb2343be157575bea",
+        "sources": "67d18b2ebb7b946c781310b9c3d0232f44b7a98278be28afe62a9e658806d088"
+      },
+      "version": "2.9.0"
+    },
+    "com.uber.m3:tally-core": {
+      "shasums": {
+        "jar": "b3ccc572be36be91c47447c7778bc141a74591279cdb40224882e8ac8271b58b",
+        "sources": "41608baed90a05ae702dacf1b6894080debe215761f92947171b603a0abe188e"
+      },
+      "version": "0.13.0"
     },
     "com.uber.nullaway:nullaway": {
       "shasums": {
@@ -950,12 +1060,89 @@
       },
       "version": "7.9.0"
     },
+    "io.grpc:grpc-api": {
+      "shasums": {
+        "jar": "13ce42c59871a04a7340f01e1dbd879fefa04811878cfd68864596321f555ed3",
+        "sources": "ac4458ef4d0e9a957ba013ed507ad4a1cab54faf7a8f3a57daea8b9238aef0f3"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-context": {
+      "shasums": {
+        "jar": "3b4eb9ca65fe5cd98b2665f9b355158fac5a048708626b5b68dc66c43fb820d3",
+        "sources": "8be4a10ccd6ffd2ec26d35c2a5803e87a85125904772f48b759fc799f05ab586"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-core": {
+      "shasums": {
+        "jar": "00926861e7dcd9ce993a3ed3cb6f55b104c0a3ad0dad2cdde8680d1bcbd100b6",
+        "sources": "0f86b82b7b7e2e895f8be681c3d65d504c78062c4a2c4c4570289bb9c6964b59"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-inprocess": {
+      "shasums": {
+        "jar": "cb1f0095ab7f2603508433554ec7bd9602bbe0e3340ade262c58e911cb8ccc63",
+        "sources": "79ef2c2ad6f475da73023bbc459ce787c96c398a2d73b02ec0c0f0c00001c01b"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-netty-shaded": {
+      "shasums": {
+        "jar": "196ef71498808fbd81555af0c5b00e0f6e8263d8e6d2bc115d36239088876328",
+        "sources": "8be4a10ccd6ffd2ec26d35c2a5803e87a85125904772f48b759fc799f05ab586"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-protobuf": {
+      "shasums": {
+        "jar": "52a004da0065d39601257ded13c40e0e4dfcf74db1c55a9bf7932a88fc384809",
+        "sources": "b1965c26a25e35abd09fd98d599c0d8565a494e9f11efbac80566b987ae3b11b"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-protobuf-lite": {
+      "shasums": {
+        "jar": "5fb276bfc4974182888e11c1c0115d9d01cb970a39fc75c8c73695d3da13d878",
+        "sources": "6ea59f37352a9f22b965dfabc2ea1590866405185331305eb7b56b8461c011b3"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-services": {
+      "shasums": {
+        "jar": "64ed014542d83664b401faed38d6b32cbd624234481c71a7277c777937c0e902",
+        "sources": "96210eaf6691dbc405aa1821cff91b4807c190afe5c10d80f1474e54e3dce549"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-stub": {
+      "shasums": {
+        "jar": "e8d2fb3f6a75c8052c16173072111cb5140c8a0ad054a0c43188e0d1da162de6",
+        "sources": "996a7e39b81539b7f26b7e4132868c9115f586cb9ad305e0cc017a6c4679ac07"
+      },
+      "version": "1.76.0"
+    },
+    "io.grpc:grpc-util": {
+      "shasums": {
+        "jar": "f342c19c9dc3ac9235a0b5d564834b326b375831373d5a9f87b2b5362553b17e",
+        "sources": "2d3ad3ffd2dffe7f0b4e45ceacf9385038fa04df4928804dba8f6159a74c62d0"
+      },
+      "version": "1.76.0"
+    },
     "io.lettuce:lettuce-core": {
       "shasums": {
         "jar": "d08f925e2f5b1207a6eb3724d07caaf79543b8c8687f4a7413047ccc397b5230",
         "sources": "44364a627371809a0441611c4332007d10b931ef7a4400ea9885f720fd7ca733"
       },
       "version": "7.9.0.RELEASE"
+    },
+    "io.micrometer:micrometer-core": {
+      "shasums": {
+        "jar": "ddec1c877a32dcf4f5e6cab5efc22707975d1d7e0fb780bcffe505384c52070c",
+        "sources": "75e667a532d71b18eb4db9b24b70205222cce68bb47a0c40e3241252b1e27919"
+      },
+      "version": "1.9.9"
     },
     "io.netty:netty-buffer": {
       "shasums": {
@@ -1083,6 +1270,13 @@
       },
       "version": "4.2.20.Final"
     },
+    "io.nexusrpc:nexus-sdk": {
+      "shasums": {
+        "jar": "72bbed1edcbc658dc86ff4ba3a305c6d1aa1039cff2a41a384551c1e496f2c95",
+        "sources": "58e57bd0a32523d07327255019d8562a939b0bdbd2fdc838e7a78db49f20b6eb"
+      },
+      "version": "0.6.0-alpha"
+    },
     "io.opentelemetry.semconv:opentelemetry-semconv": {
       "shasums": {
         "jar": "745a86a75ecb5e03f464f05ea2dc76e0f04d07273c5509fa74f393bff9b222b7",
@@ -1167,6 +1361,13 @@
       },
       "version": "1.68.0"
     },
+    "io.perfmark:perfmark-api": {
+      "shasums": {
+        "jar": "c7b478503ec524e55df19b424d46d27c8a68aeb801664fadd4f069b71f52d0f6",
+        "sources": "311551ab29cf51e5a8abee6a019e88dee47d1ea71deb9fcd3649db9c51b237bc"
+      },
+      "version": "0.27.0"
+    },
     "io.projectreactor:reactor-core": {
       "shasums": {
         "jar": "9a5f1bfc5ad0416a410ff63beaa279cc30c2da3ae9b111a678c83c99298a1551",
@@ -1180,6 +1381,34 @@
         "sources": "9658c659f8ae1fbd61d81bd1c265728d37a9ad21b04ace5bb3deac6f3387bd2b"
       },
       "version": "3.1.12"
+    },
+    "io.temporal:temporal-sdk": {
+      "shasums": {
+        "jar": "ccac1d69457543bd3190ccceca954a3ec95604f930024b73a7306714b2c8e8bf",
+        "sources": "3179d89f1687776d335badcad44113989dbb50a046cb771b619e947551c5d8ec"
+      },
+      "version": "1.40.0"
+    },
+    "io.temporal:temporal-serviceclient": {
+      "shasums": {
+        "jar": "d75f6294a4a06004a042a0e6fb3fcd5db8915dca768c59abb724574c2ebe6685",
+        "sources": "fc4553ddc84a65916444669c0871e88a38e52964af26d9637e42ae2931b80d27"
+      },
+      "version": "1.40.0"
+    },
+    "io.temporal:temporal-test-server": {
+      "shasums": {
+        "jar": "2435938c4e852345c0ba05c48e9b258b39137e5b4061d4a85a796f89b7a3d15e",
+        "sources": "563b090490a5cf2f464f9066af2db5480f4364d0c789de52a62c064bc4a8c19f"
+      },
+      "version": "1.40.0"
+    },
+    "io.temporal:temporal-testing": {
+      "shasums": {
+        "jar": "53406185507b2781705f32819ac4d9393a5187cbc314966fff8187c417467e26",
+        "sources": "823e0ea2283ccfe6bb91e0642b1d2f95866df9a7926254b11948c1d451e28942"
+      },
+      "version": "1.40.0"
     },
     "io.vertx:vertx-auth-common": {
       "shasums": {
@@ -1264,6 +1493,20 @@
         "sources": "0b9224e215b3c6a464959e3f994ddd64c14d46fb4014facd6afa1cc18e469466"
       },
       "version": "5.18.1"
+    },
+    "net.minidev:accessors-smart": {
+      "shasums": {
+        "jar": "12314fc6881d66a413fd66370787adba16e504fbf7e138690b0f3952e3fbd321",
+        "sources": "15b7153f0dc43209d9e4d8a75791e076ec738a7b66def3fd26ed2f545ed0725c"
+      },
+      "version": "2.5.0"
+    },
+    "net.minidev:json-smart": {
+      "shasums": {
+        "jar": "432b9e545848c4141b80717b26e367f83bf33f19250a228ce75da6e967da2bc7",
+        "sources": "defc60385f6df8c683ab097874f5057a25a8bfda2e8399256d5e52d9f5bdf541"
+      },
+      "version": "2.5.0"
     },
     "net.sf.saxon:Saxon-HE": {
       "shasums": {
@@ -1377,6 +1620,13 @@
       },
       "version": "4.3.1"
     },
+    "org.codehaus.mojo:animal-sniffer-annotations": {
+      "shasums": {
+        "jar": "c720e6e5bcbe6b2f48ded75a47bccdb763eede79d14330102e0d352e3d89ed92",
+        "sources": "4270ce5531ed0f12e4234e08f240ef3b45ee3ceeb16e28d44abc61c12cf522ca"
+      },
+      "version": "1.24"
+    },
     "org.commonmark:commonmark": {
       "shasums": {
         "jar": "4c9b0fa481e36d7176f38e572c134656424cf9601bc190855d0f89478df901c6",
@@ -1411,6 +1661,13 @@
         "sources": "1f0f6588b9b6f6b232bf4917bee0a672d85e9ffb3a5265d3b8967bd9897ae644"
       },
       "version": "2.1.5"
+    },
+    "org.hdrhistogram:HdrHistogram": {
+      "shasums": {
+        "jar": "9b47fbae444feaac4b7e04f0ea294569e4bc282bc69d8c2ce2ac3f23577281e2",
+        "sources": "694ba8e66af54ae338a36eef6d1e0bbbeb85f6773965841dd449f669643ae8ba"
+      },
+      "version": "2.1.12"
     },
     "org.hsqldb:hsqldb": {
       "shasums": {
@@ -1509,6 +1766,13 @@
         "sources": "bb35a4ce11ed0bc14e6d24492b87d9c658c9d56baed68394f25acee896c8b10d"
       },
       "version": "6.1.3"
+    },
+    "org.latencyutils:LatencyUtils": {
+      "shasums": {
+        "jar": "a32a9ffa06b2f4e01c5360f8f9df7bc5d9454a5d373cd8f361347fa5a57165ec",
+        "sources": "717e271b5d67c190afba092795d79bba496434256aca7151cf6a02f83564e724"
+      },
+      "version": "2.0.3"
     },
     "org.mockito:mockito-core": {
       "shasums": {
@@ -1731,6 +1995,7 @@
     "org.apache.commons:commons-lang3:3.20.0": "org.apache.commons:commons-lang3:3.21.0",
     "org.objenesis:objenesis:1.2": "org.objenesis:objenesis:3.3",
     "org.objenesis:objenesis:3.6": "org.objenesis:objenesis:3.3",
+    "org.ow2.asm:asm:9.3": "org.ow2.asm:asm:9.11",
     "org.reactivestreams:reactive-streams:1.0.4": "org.reactivestreams:reactive-streams:1.0.3",
     "org.yaml:snakeyaml:2.5": "org.yaml:snakeyaml:2.6"
   },
@@ -1748,6 +2013,10 @@
       "com.fasterxml.jackson.core:jackson-core",
       "com.fasterxml.jackson.core:jackson-databind",
       "org.yaml:snakeyaml"
+    ],
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": [
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.core:jackson-databind"
     ],
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": [
       "com.fasterxml.jackson.core:jackson-annotations",
@@ -1788,6 +2057,9 @@
     ],
     "com.github.spotbugs:spotbugs-annotations": [
       "com.google.code.findbugs:jsr305"
+    ],
+    "com.google.api.grpc:proto-google-common-protos": [
+      "com.google.protobuf:protobuf-java"
     ],
     "com.google.auto.service:auto-service": [
       "com.google.auto.service:auto-service-annotations",
@@ -1843,6 +2115,14 @@
     "com.google.jimfs:jimfs": [
       "com.google.guava:guava"
     ],
+    "com.google.protobuf:protobuf-java-util": [
+      "com.google.code.findbugs:jsr305",
+      "com.google.code.gson:gson",
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava",
+      "com.google.j2objc:j2objc-annotations",
+      "com.google.protobuf:protobuf-java"
+    ],
     "com.graphql-java:graphql-java": [
       "com.graphql-java:java-dataloader",
       "org.jspecify:jspecify",
@@ -1851,6 +2131,12 @@
     "com.graphql-java:java-dataloader": [
       "org.jspecify:jspecify",
       "org.reactivestreams:reactive-streams"
+    ],
+    "com.jayway.jsonpath:json-path": [
+      "net.minidev:json-smart"
+    ],
+    "com.uber.m3:tally-core": [
+      "com.google.code.findbugs:jsr305"
     ],
     "com.uber.nullaway:nullaway": [
       "com.google.guava:guava",
@@ -1989,6 +2275,73 @@
     "io.fabric8:zjsonpatch": [
       "com.fasterxml.jackson.core:jackson-databind"
     ],
+    "io.grpc:grpc-api": [
+      "com.google.code.findbugs:jsr305",
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava"
+    ],
+    "io.grpc:grpc-context": [
+      "io.grpc:grpc-api"
+    ],
+    "io.grpc:grpc-core": [
+      "com.google.android:annotations",
+      "com.google.code.gson:gson",
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-context",
+      "io.perfmark:perfmark-api",
+      "org.codehaus.mojo:animal-sniffer-annotations"
+    ],
+    "io.grpc:grpc-inprocess": [
+      "com.google.guava:guava",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-core"
+    ],
+    "io.grpc:grpc-netty-shaded": [
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-core",
+      "io.grpc:grpc-util",
+      "io.perfmark:perfmark-api",
+      "org.codehaus.mojo:animal-sniffer-annotations"
+    ],
+    "io.grpc:grpc-protobuf": [
+      "com.google.api.grpc:proto-google-common-protos",
+      "com.google.code.findbugs:jsr305",
+      "com.google.guava:guava",
+      "com.google.protobuf:protobuf-java",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-protobuf-lite"
+    ],
+    "io.grpc:grpc-protobuf-lite": [
+      "com.google.code.findbugs:jsr305",
+      "com.google.guava:guava",
+      "io.grpc:grpc-api"
+    ],
+    "io.grpc:grpc-services": [
+      "com.google.code.gson:gson",
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava",
+      "com.google.protobuf:protobuf-java-util",
+      "io.grpc:grpc-core",
+      "io.grpc:grpc-protobuf",
+      "io.grpc:grpc-stub",
+      "io.grpc:grpc-util"
+    ],
+    "io.grpc:grpc-stub": [
+      "com.google.errorprone:error_prone_annotations",
+      "com.google.guava:guava",
+      "io.grpc:grpc-api",
+      "org.codehaus.mojo:animal-sniffer-annotations"
+    ],
+    "io.grpc:grpc-util": [
+      "com.google.guava:guava",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-core",
+      "org.codehaus.mojo:animal-sniffer-annotations"
+    ],
     "io.lettuce:lettuce-core": [
       "io.netty:netty-common",
       "io.netty:netty-handler",
@@ -1996,6 +2349,10 @@
       "io.netty:netty-transport",
       "io.projectreactor:reactor-core",
       "redis.clients.authentication:redis-authx-core"
+    ],
+    "io.micrometer:micrometer-core": [
+      "org.hdrhistogram:HdrHistogram",
+      "org.latencyutils:LatencyUtils"
     ],
     "io.netty:netty-buffer": [
       "io.netty:netty-common"
@@ -2144,6 +2501,38 @@
     "io.reactivex.rxjava3:rxjava": [
       "org.reactivestreams:reactive-streams"
     ],
+    "io.temporal:temporal-sdk": [
+      "com.fasterxml.jackson.core:jackson-databind",
+      "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
+      "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
+      "com.google.code.gson:gson",
+      "com.google.guava:guava",
+      "io.micrometer:micrometer-core",
+      "io.nexusrpc:nexus-sdk",
+      "io.temporal:temporal-serviceclient"
+    ],
+    "io.temporal:temporal-serviceclient": [
+      "com.google.protobuf:protobuf-java-util",
+      "com.uber.m3:tally-core",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-inprocess",
+      "io.grpc:grpc-netty-shaded",
+      "io.grpc:grpc-protobuf",
+      "io.grpc:grpc-services",
+      "io.grpc:grpc-stub",
+      "org.slf4j:slf4j-api"
+    ],
+    "io.temporal:temporal-test-server": [
+      "com.cronutils:cron-utils",
+      "com.google.guava:guava",
+      "io.temporal:temporal-sdk"
+    ],
+    "io.temporal:temporal-testing": [
+      "com.jayway.jsonpath:json-path",
+      "io.temporal:temporal-sdk",
+      "io.temporal:temporal-test-server",
+      "org.apache.commons:commons-compress"
+    ],
     "io.vertx:vertx-auth-common": [
       "io.vertx:vertx-core"
     ],
@@ -2170,6 +2559,12 @@
     ],
     "net.java.dev.javacc:javacc": [
       "junit:junit"
+    ],
+    "net.minidev:accessors-smart": [
+      "org.ow2.asm:asm"
+    ],
+    "net.minidev:json-smart": [
+      "net.minidev:accessors-smart"
     ],
     "net.sf.saxon:Saxon-HE": [
       "org.xmlresolver:xmlresolver",
@@ -2391,6 +2786,27 @@
       "com.beust.jcommander.parser",
       "com.beust.jcommander.validators"
     ],
+    "com.cronutils:cron-utils": [
+      "com.cronutils",
+      "com.cronutils.builder",
+      "com.cronutils.converter",
+      "com.cronutils.descriptor",
+      "com.cronutils.descriptor.refactor",
+      "com.cronutils.mapper",
+      "com.cronutils.model",
+      "com.cronutils.model.definition",
+      "com.cronutils.model.field",
+      "com.cronutils.model.field.constraint",
+      "com.cronutils.model.field.definition",
+      "com.cronutils.model.field.expression",
+      "com.cronutils.model.field.expression.visitor",
+      "com.cronutils.model.field.value",
+      "com.cronutils.model.time",
+      "com.cronutils.model.time.generator",
+      "com.cronutils.parser",
+      "com.cronutils.utils",
+      "com.cronutils.validation"
+    ],
     "com.esotericsoftware:kryo": [
       "com.esotericsoftware.kryo",
       "com.esotericsoftware.kryo.io",
@@ -2453,6 +2869,9 @@
       "com.fasterxml.jackson.dataformat.yaml",
       "com.fasterxml.jackson.dataformat.yaml.snakeyaml.error",
       "com.fasterxml.jackson.dataformat.yaml.util"
+    ],
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": [
+      "com.fasterxml.jackson.datatype.jdk8"
     ],
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": [
       "com.fasterxml.jackson.datatype.jsr310",
@@ -2646,6 +3065,23 @@
     ],
     "com.github.stephenc.jcip:jcip-annotations": [
       "net.jcip.annotations"
+    ],
+    "com.google.android:annotations": [
+      "android.annotation"
+    ],
+    "com.google.api.grpc:proto-google-common-protos": [
+      "com.google.api",
+      "com.google.apps.card.v1",
+      "com.google.cloud",
+      "com.google.cloud.audit",
+      "com.google.cloud.location",
+      "com.google.geo.type",
+      "com.google.logging.type",
+      "com.google.longrunning",
+      "com.google.rpc",
+      "com.google.rpc.context",
+      "com.google.shopping.type",
+      "com.google.type"
     ],
     "com.google.auto.service:auto-service": [
       "com.google.auto.service.processor"
@@ -2901,6 +3337,9 @@
       "com.google.protobuf",
       "com.google.protobuf.compiler"
     ],
+    "com.google.protobuf:protobuf-java-util": [
+      "com.google.protobuf.util"
+    ],
     "com.graphql-java:graphql-java": [
       "graphql",
       "graphql.analysis",
@@ -2972,6 +3411,25 @@
       "org.dataloader.scheduler",
       "org.dataloader.stats",
       "org.dataloader.stats.context"
+    ],
+    "com.jayway.jsonpath:json-path": [
+      "com.jayway.jsonpath",
+      "com.jayway.jsonpath.internal",
+      "com.jayway.jsonpath.internal.filter",
+      "com.jayway.jsonpath.internal.function",
+      "com.jayway.jsonpath.internal.function.json",
+      "com.jayway.jsonpath.internal.function.latebinding",
+      "com.jayway.jsonpath.internal.function.numeric",
+      "com.jayway.jsonpath.internal.function.sequence",
+      "com.jayway.jsonpath.internal.function.text",
+      "com.jayway.jsonpath.internal.path",
+      "com.jayway.jsonpath.spi.cache",
+      "com.jayway.jsonpath.spi.json",
+      "com.jayway.jsonpath.spi.mapper"
+    ],
+    "com.uber.m3:tally-core": [
+      "com.uber.m3.tally",
+      "com.uber.m3.util"
     ],
     "com.uber.nullaway:nullaway": [
       "com.uber.nullaway",
@@ -3183,6 +3641,107 @@
       "io.fabric8.zjsonpatch",
       "io.fabric8.zjsonpatch.internal.collections4"
     ],
+    "io.grpc:grpc-api": [
+      "io.grpc"
+    ],
+    "io.grpc:grpc-core": [
+      "io.grpc.internal"
+    ],
+    "io.grpc:grpc-inprocess": [
+      "io.grpc.inprocess"
+    ],
+    "io.grpc:grpc-netty-shaded": [
+      "io.grpc.netty.shaded.io.grpc.netty",
+      "io.grpc.netty.shaded.io.netty.bootstrap",
+      "io.grpc.netty.shaded.io.netty.buffer",
+      "io.grpc.netty.shaded.io.netty.buffer.search",
+      "io.grpc.netty.shaded.io.netty.channel",
+      "io.grpc.netty.shaded.io.netty.channel.embedded",
+      "io.grpc.netty.shaded.io.netty.channel.epoll",
+      "io.grpc.netty.shaded.io.netty.channel.group",
+      "io.grpc.netty.shaded.io.netty.channel.internal",
+      "io.grpc.netty.shaded.io.netty.channel.local",
+      "io.grpc.netty.shaded.io.netty.channel.nio",
+      "io.grpc.netty.shaded.io.netty.channel.oio",
+      "io.grpc.netty.shaded.io.netty.channel.pool",
+      "io.grpc.netty.shaded.io.netty.channel.socket",
+      "io.grpc.netty.shaded.io.netty.channel.socket.nio",
+      "io.grpc.netty.shaded.io.netty.channel.socket.oio",
+      "io.grpc.netty.shaded.io.netty.channel.unix",
+      "io.grpc.netty.shaded.io.netty.handler.address",
+      "io.grpc.netty.shaded.io.netty.handler.codec",
+      "io.grpc.netty.shaded.io.netty.handler.codec.base64",
+      "io.grpc.netty.shaded.io.netty.handler.codec.bytes",
+      "io.grpc.netty.shaded.io.netty.handler.codec.compression",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.cookie",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.cors",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.multipart",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.websocketx",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.websocketx.extensions",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http.websocketx.extensions.compression",
+      "io.grpc.netty.shaded.io.netty.handler.codec.http2",
+      "io.grpc.netty.shaded.io.netty.handler.codec.json",
+      "io.grpc.netty.shaded.io.netty.handler.codec.marshalling",
+      "io.grpc.netty.shaded.io.netty.handler.codec.protobuf",
+      "io.grpc.netty.shaded.io.netty.handler.codec.rtsp",
+      "io.grpc.netty.shaded.io.netty.handler.codec.serialization",
+      "io.grpc.netty.shaded.io.netty.handler.codec.socks",
+      "io.grpc.netty.shaded.io.netty.handler.codec.socksx",
+      "io.grpc.netty.shaded.io.netty.handler.codec.socksx.v4",
+      "io.grpc.netty.shaded.io.netty.handler.codec.socksx.v5",
+      "io.grpc.netty.shaded.io.netty.handler.codec.spdy",
+      "io.grpc.netty.shaded.io.netty.handler.codec.string",
+      "io.grpc.netty.shaded.io.netty.handler.codec.xml",
+      "io.grpc.netty.shaded.io.netty.handler.flow",
+      "io.grpc.netty.shaded.io.netty.handler.flush",
+      "io.grpc.netty.shaded.io.netty.handler.ipfilter",
+      "io.grpc.netty.shaded.io.netty.handler.logging",
+      "io.grpc.netty.shaded.io.netty.handler.pcap",
+      "io.grpc.netty.shaded.io.netty.handler.proxy",
+      "io.grpc.netty.shaded.io.netty.handler.ssl",
+      "io.grpc.netty.shaded.io.netty.handler.ssl.ocsp",
+      "io.grpc.netty.shaded.io.netty.handler.ssl.util",
+      "io.grpc.netty.shaded.io.netty.handler.stream",
+      "io.grpc.netty.shaded.io.netty.handler.timeout",
+      "io.grpc.netty.shaded.io.netty.handler.traffic",
+      "io.grpc.netty.shaded.io.netty.internal.tcnative",
+      "io.grpc.netty.shaded.io.netty.resolver",
+      "io.grpc.netty.shaded.io.netty.util",
+      "io.grpc.netty.shaded.io.netty.util.collection",
+      "io.grpc.netty.shaded.io.netty.util.concurrent",
+      "io.grpc.netty.shaded.io.netty.util.internal",
+      "io.grpc.netty.shaded.io.netty.util.internal.logging",
+      "io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues",
+      "io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.atomic",
+      "io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.atomic.unpadded",
+      "io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.unpadded",
+      "io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.util",
+      "io.grpc.netty.shaded.io.netty.util.internal.svm"
+    ],
+    "io.grpc:grpc-protobuf": [
+      "io.grpc.protobuf"
+    ],
+    "io.grpc:grpc-protobuf-lite": [
+      "io.grpc.protobuf.lite"
+    ],
+    "io.grpc:grpc-services": [
+      "io.grpc.binarylog.v1",
+      "io.grpc.channelz.v1",
+      "io.grpc.health.v1",
+      "io.grpc.protobuf.services",
+      "io.grpc.protobuf.services.internal",
+      "io.grpc.reflection.v1",
+      "io.grpc.reflection.v1alpha",
+      "io.grpc.services"
+    ],
+    "io.grpc:grpc-stub": [
+      "io.grpc.stub",
+      "io.grpc.stub.annotations"
+    ],
+    "io.grpc:grpc-util": [
+      "io.grpc.util"
+    ],
     "io.lettuce:lettuce-core": [
       "io.lettuce.authx",
       "io.lettuce.core",
@@ -3265,6 +3824,47 @@
       "io.lettuce.core.support.http",
       "io.lettuce.core.tracing",
       "io.lettuce.core.vector"
+    ],
+    "io.micrometer:micrometer-core": [
+      "io.micrometer.core.annotation",
+      "io.micrometer.core.aop",
+      "io.micrometer.core.instrument",
+      "io.micrometer.core.instrument.binder",
+      "io.micrometer.core.instrument.binder.cache",
+      "io.micrometer.core.instrument.binder.commonspool2",
+      "io.micrometer.core.instrument.binder.db",
+      "io.micrometer.core.instrument.binder.grpc",
+      "io.micrometer.core.instrument.binder.http",
+      "io.micrometer.core.instrument.binder.httpcomponents",
+      "io.micrometer.core.instrument.binder.hystrix",
+      "io.micrometer.core.instrument.binder.jersey.server",
+      "io.micrometer.core.instrument.binder.jetty",
+      "io.micrometer.core.instrument.binder.jpa",
+      "io.micrometer.core.instrument.binder.jvm",
+      "io.micrometer.core.instrument.binder.kafka",
+      "io.micrometer.core.instrument.binder.logging",
+      "io.micrometer.core.instrument.binder.mongodb",
+      "io.micrometer.core.instrument.binder.okhttp3",
+      "io.micrometer.core.instrument.binder.system",
+      "io.micrometer.core.instrument.binder.tomcat",
+      "io.micrometer.core.instrument.composite",
+      "io.micrometer.core.instrument.config",
+      "io.micrometer.core.instrument.config.validate",
+      "io.micrometer.core.instrument.cumulative",
+      "io.micrometer.core.instrument.distribution",
+      "io.micrometer.core.instrument.distribution.pause",
+      "io.micrometer.core.instrument.dropwizard",
+      "io.micrometer.core.instrument.internal",
+      "io.micrometer.core.instrument.logging",
+      "io.micrometer.core.instrument.noop",
+      "io.micrometer.core.instrument.push",
+      "io.micrometer.core.instrument.search",
+      "io.micrometer.core.instrument.simple",
+      "io.micrometer.core.instrument.step",
+      "io.micrometer.core.instrument.util",
+      "io.micrometer.core.ipc.http",
+      "io.micrometer.core.lang",
+      "io.micrometer.core.util.internal.logging"
     ],
     "io.netty:netty-buffer": [
       "io.netty.buffer",
@@ -3369,6 +3969,10 @@
     "io.netty:netty-transport-native-unix-common": [
       "io.netty.channel.unix"
     ],
+    "io.nexusrpc:nexus-sdk": [
+      "io.nexusrpc",
+      "io.nexusrpc.handler"
+    ],
     "io.opentelemetry.semconv:opentelemetry-semconv": [
       "io.opentelemetry.semconv"
     ],
@@ -3452,6 +4056,9 @@
       "io.opentelemetry.sdk.trace.internal.shaded.jctools.util",
       "io.opentelemetry.sdk.trace.samplers"
     ],
+    "io.perfmark:perfmark-api": [
+      "io.perfmark"
+    ],
     "io.projectreactor:reactor-core": [
       "reactor.adapter",
       "reactor.core",
@@ -3499,6 +4106,117 @@
       "io.reactivex.rxjava3.schedulers",
       "io.reactivex.rxjava3.subjects",
       "io.reactivex.rxjava3.subscribers"
+    ],
+    "io.temporal:temporal-sdk": [
+      "io.temporal.activity",
+      "io.temporal.client",
+      "io.temporal.client.schedules",
+      "io.temporal.common",
+      "io.temporal.common.context",
+      "io.temporal.common.converter",
+      "io.temporal.common.interceptors",
+      "io.temporal.common.metadata",
+      "io.temporal.common.reporter",
+      "io.temporal.failure",
+      "io.temporal.internal",
+      "io.temporal.internal.activity",
+      "io.temporal.internal.async",
+      "io.temporal.internal.async.spi",
+      "io.temporal.internal.client",
+      "io.temporal.internal.client.external",
+      "io.temporal.internal.common",
+      "io.temporal.internal.common.env",
+      "io.temporal.internal.common.kotlin",
+      "io.temporal.internal.concurrent.structured",
+      "io.temporal.internal.context",
+      "io.temporal.internal.history",
+      "io.temporal.internal.logging",
+      "io.temporal.internal.nexus",
+      "io.temporal.internal.payload.storage",
+      "io.temporal.internal.payload.visitor",
+      "io.temporal.internal.replay",
+      "io.temporal.internal.statemachines",
+      "io.temporal.internal.sync",
+      "io.temporal.internal.task",
+      "io.temporal.internal.util",
+      "io.temporal.internal.worker",
+      "io.temporal.nexus",
+      "io.temporal.payload.codec",
+      "io.temporal.payload.context",
+      "io.temporal.payload.storage",
+      "io.temporal.worker",
+      "io.temporal.worker.tuning",
+      "io.temporal.workflow",
+      "io.temporal.workflow.unsafe"
+    ],
+    "io.temporal:temporal-serviceclient": [
+      "grpc.gateway.protoc_gen_openapiv2.options",
+      "io.temporal.api.activity.v1",
+      "io.temporal.api.batch.v1",
+      "io.temporal.api.callback.v1",
+      "io.temporal.api.cloud.account.v1",
+      "io.temporal.api.cloud.auditlog.v1",
+      "io.temporal.api.cloud.billing.v1",
+      "io.temporal.api.cloud.cloudservice.v1",
+      "io.temporal.api.cloud.connectivityrule.v1",
+      "io.temporal.api.cloud.identity.v1",
+      "io.temporal.api.cloud.namespace.v1",
+      "io.temporal.api.cloud.nexus.v1",
+      "io.temporal.api.cloud.operation.v1",
+      "io.temporal.api.cloud.region.v1",
+      "io.temporal.api.cloud.resource.v1",
+      "io.temporal.api.cloud.sink.v1",
+      "io.temporal.api.cloud.usage.v1",
+      "io.temporal.api.command.v1",
+      "io.temporal.api.common.v1",
+      "io.temporal.api.compute.v1",
+      "io.temporal.api.deployment.v1",
+      "io.temporal.api.enums.v1",
+      "io.temporal.api.errordetails.v1",
+      "io.temporal.api.export.v1",
+      "io.temporal.api.failure.v1",
+      "io.temporal.api.filter.v1",
+      "io.temporal.api.history.v1",
+      "io.temporal.api.namespace.v1",
+      "io.temporal.api.nexus.v1",
+      "io.temporal.api.nexusservices.workerservice.v1",
+      "io.temporal.api.operatorservice.v1",
+      "io.temporal.api.protocol.v1",
+      "io.temporal.api.protometa.v1",
+      "io.temporal.api.query.v1",
+      "io.temporal.api.replication.v1",
+      "io.temporal.api.rules.v1",
+      "io.temporal.api.schedule.v1",
+      "io.temporal.api.sdk.v1",
+      "io.temporal.api.taskqueue.v1",
+      "io.temporal.api.update.v1",
+      "io.temporal.api.version.v1",
+      "io.temporal.api.worker.v1",
+      "io.temporal.api.workflow.v1",
+      "io.temporal.api.workflowservice.v1",
+      "io.temporal.authorization",
+      "io.temporal.conf",
+      "io.temporal.internal",
+      "io.temporal.internal.common",
+      "io.temporal.internal.retryer",
+      "io.temporal.internal.testservice",
+      "io.temporal.serviceclient",
+      "io.temporal.serviceclient.rpcretry",
+      "nexusannotations.v1"
+    ],
+    "io.temporal:temporal-test-server": [
+      "io.temporal.api.testservice.v1",
+      "io.temporal.internal.testservice",
+      "io.temporal.serviceclient",
+      "io.temporal.testserver"
+    ],
+    "io.temporal:temporal-testing": [
+      "io.temporal.internal",
+      "io.temporal.internal.docker",
+      "io.temporal.internal.sync",
+      "io.temporal.testing",
+      "io.temporal.testing.internal",
+      "io.temporal.testing.internal.devserver"
     ],
     "io.vertx:vertx-auth-common": [
       "io.vertx.ext.auth",
@@ -3726,6 +4444,17 @@
       "com.sun.jna.internal",
       "com.sun.jna.ptr",
       "com.sun.jna.win32"
+    ],
+    "net.minidev:accessors-smart": [
+      "net.minidev.asm",
+      "net.minidev.asm.ex"
+    ],
+    "net.minidev:json-smart": [
+      "net.minidev.json",
+      "net.minidev.json.annotate",
+      "net.minidev.json.parser",
+      "net.minidev.json.reader",
+      "net.minidev.json.writer"
     ],
     "net.sf.saxon:Saxon-HE": [
       "net.sf.saxon",
@@ -4385,6 +5114,9 @@
       "org.checkerframework.nullaway.org.plumelib.reflection",
       "org.checkerframework.nullaway.org.plumelib.util"
     ],
+    "org.codehaus.mojo:animal-sniffer-annotations": [
+      "org.codehaus.mojo.animal_sniffer"
+    ],
     "org.commonmark:commonmark": [
       "org.commonmark",
       "org.commonmark.internal",
@@ -4433,6 +5165,10 @@
       "org.eclipse.egit.github.core.event",
       "org.eclipse.egit.github.core.service",
       "org.eclipse.egit.github.core.util"
+    ],
+    "org.hdrhistogram:HdrHistogram": [
+      "org.HdrHistogram",
+      "org.HdrHistogram.packedarray"
     ],
     "org.hsqldb:hsqldb": [
       "org.hsqldb",
@@ -4595,6 +5331,9 @@
       "org.junit.platform.reporting.shadow.org.opentest4j.reporting.events.java",
       "org.junit.platform.reporting.shadow.org.opentest4j.reporting.events.root",
       "org.junit.platform.reporting.shadow.org.opentest4j.reporting.schema"
+    ],
+    "org.latencyutils:LatencyUtils": [
+      "org.LatencyUtils"
     ],
     "org.mockito:mockito-core": [
       "org.mockito",
@@ -5450,6 +6189,8 @@
       "cglib:cglib-nodep:jar:sources",
       "com.beust:jcommander",
       "com.beust:jcommander:jar:sources",
+      "com.cronutils:cron-utils",
+      "com.cronutils:cron-utils:jar:sources",
       "com.esotericsoftware:kryo",
       "com.esotericsoftware:kryo:jar:sources",
       "com.esotericsoftware:minlog",
@@ -5464,6 +6205,8 @@
       "com.fasterxml.jackson.core:jackson-databind:jar:sources",
       "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
       "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources",
+      "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
+      "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources",
       "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
       "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:sources",
       "com.github.ben-manes.caffeine:caffeine",
@@ -5482,6 +6225,10 @@
       "com.github.spotbugs:spotbugs:jar:sources",
       "com.github.stephenc.jcip:jcip-annotations",
       "com.github.stephenc.jcip:jcip-annotations:jar:sources",
+      "com.google.android:annotations",
+      "com.google.android:annotations:jar:sources",
+      "com.google.api.grpc:proto-google-common-protos",
+      "com.google.api.grpc:proto-google-common-protos:jar:sources",
       "com.google.auto.service:auto-service",
       "com.google.auto.service:auto-service-annotations",
       "com.google.auto.service:auto-service-annotations:jar:sources",
@@ -5519,11 +6266,17 @@
       "com.google.protobuf.nano:protobuf-javanano",
       "com.google.protobuf.nano:protobuf-javanano:jar:sources",
       "com.google.protobuf:protobuf-java",
+      "com.google.protobuf:protobuf-java-util",
+      "com.google.protobuf:protobuf-java-util:jar:sources",
       "com.google.protobuf:protobuf-java:jar:sources",
       "com.graphql-java:graphql-java",
       "com.graphql-java:graphql-java:jar:sources",
       "com.graphql-java:java-dataloader",
       "com.graphql-java:java-dataloader:jar:sources",
+      "com.jayway.jsonpath:json-path",
+      "com.jayway.jsonpath:json-path:jar:sources",
+      "com.uber.m3:tally-core",
+      "com.uber.m3:tally-core:jar:sources",
       "com.uber.nullaway:nullaway",
       "com.uber.nullaway:nullaway:jar:sources",
       "commons-codec:commons-codec",
@@ -5586,8 +6339,30 @@
       "io.fabric8:kubernetes-model-storageclass:jar:sources",
       "io.fabric8:zjsonpatch",
       "io.fabric8:zjsonpatch:jar:sources",
+      "io.grpc:grpc-api",
+      "io.grpc:grpc-api:jar:sources",
+      "io.grpc:grpc-context",
+      "io.grpc:grpc-context:jar:sources",
+      "io.grpc:grpc-core",
+      "io.grpc:grpc-core:jar:sources",
+      "io.grpc:grpc-inprocess",
+      "io.grpc:grpc-inprocess:jar:sources",
+      "io.grpc:grpc-netty-shaded",
+      "io.grpc:grpc-netty-shaded:jar:sources",
+      "io.grpc:grpc-protobuf",
+      "io.grpc:grpc-protobuf-lite",
+      "io.grpc:grpc-protobuf-lite:jar:sources",
+      "io.grpc:grpc-protobuf:jar:sources",
+      "io.grpc:grpc-services",
+      "io.grpc:grpc-services:jar:sources",
+      "io.grpc:grpc-stub",
+      "io.grpc:grpc-stub:jar:sources",
+      "io.grpc:grpc-util",
+      "io.grpc:grpc-util:jar:sources",
       "io.lettuce:lettuce-core",
       "io.lettuce:lettuce-core:jar:sources",
+      "io.micrometer:micrometer-core",
+      "io.micrometer:micrometer-core:jar:sources",
       "io.netty:netty-buffer",
       "io.netty:netty-buffer:jar:sources",
       "io.netty:netty-codec",
@@ -5624,6 +6399,8 @@
       "io.netty:netty-transport-native-unix-common",
       "io.netty:netty-transport-native-unix-common:jar:sources",
       "io.netty:netty-transport:jar:sources",
+      "io.nexusrpc:nexus-sdk",
+      "io.nexusrpc:nexus-sdk:jar:sources",
       "io.opentelemetry.semconv:opentelemetry-semconv",
       "io.opentelemetry.semconv:opentelemetry-semconv:jar:sources",
       "io.opentelemetry:opentelemetry-api",
@@ -5648,10 +6425,20 @@
       "io.opentelemetry:opentelemetry-sdk-trace",
       "io.opentelemetry:opentelemetry-sdk-trace:jar:sources",
       "io.opentelemetry:opentelemetry-sdk:jar:sources",
+      "io.perfmark:perfmark-api",
+      "io.perfmark:perfmark-api:jar:sources",
       "io.projectreactor:reactor-core",
       "io.projectreactor:reactor-core:jar:sources",
       "io.reactivex.rxjava3:rxjava",
       "io.reactivex.rxjava3:rxjava:jar:sources",
+      "io.temporal:temporal-sdk",
+      "io.temporal:temporal-sdk:jar:sources",
+      "io.temporal:temporal-serviceclient",
+      "io.temporal:temporal-serviceclient:jar:sources",
+      "io.temporal:temporal-test-server",
+      "io.temporal:temporal-test-server:jar:sources",
+      "io.temporal:temporal-testing",
+      "io.temporal:temporal-testing:jar:sources",
       "io.vertx:vertx-auth-common",
       "io.vertx:vertx-auth-common:jar:sources",
       "io.vertx:vertx-core",
@@ -5676,6 +6463,10 @@
       "net.java.dev.javacc:javacc:jar:sources",
       "net.java.dev.jna:jna",
       "net.java.dev.jna:jna:jar:sources",
+      "net.minidev:accessors-smart",
+      "net.minidev:accessors-smart:jar:sources",
+      "net.minidev:json-smart",
+      "net.minidev:json-smart:jar:sources",
       "net.sf.saxon:Saxon-HE",
       "net.sf.saxon:Saxon-HE:jar:sources",
       "org.apache.bcel:bcel",
@@ -5708,6 +6499,8 @@
       "org.checkerframework:checker-qual:jar:sources",
       "org.checkerframework:dataflow-nullaway",
       "org.checkerframework:dataflow-nullaway:jar:sources",
+      "org.codehaus.mojo:animal-sniffer-annotations",
+      "org.codehaus.mojo:animal-sniffer-annotations:jar:sources",
       "org.commonmark:commonmark",
       "org.commonmark:commonmark-ext-gfm-tables",
       "org.commonmark:commonmark-ext-gfm-tables:jar:sources",
@@ -5718,6 +6511,8 @@
       "org.easymock:easymock:jar:sources",
       "org.eclipse.mylyn.github:org.eclipse.egit.github.core",
       "org.eclipse.mylyn.github:org.eclipse.egit.github.core:jar:sources",
+      "org.hdrhistogram:HdrHistogram",
+      "org.hdrhistogram:HdrHistogram:jar:sources",
       "org.hsqldb:hsqldb",
       "org.hsqldb:hsqldb:jar:sources",
       "org.htmlunit:htmlunit-core-js",
@@ -5746,6 +6541,8 @@
       "org.junit.platform:junit-platform-launcher:jar:sources",
       "org.junit.platform:junit-platform-reporting",
       "org.junit.platform:junit-platform-reporting:jar:sources",
+      "org.latencyutils:LatencyUtils",
+      "org.latencyutils:LatencyUtils:jar:sources",
       "org.mockito:mockito-core",
       "org.mockito:mockito-core:jar:sources",
       "org.objenesis:objenesis",
@@ -5826,6 +6623,11 @@
       ],
       "com.fasterxml.jackson.core.ObjectCodec": [
         "com.fasterxml.jackson.dataformat.yaml.YAMLMapper"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.jdk8.Jdk8Module"
       ]
     },
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": {
@@ -6300,6 +7102,40 @@
         "io.fabric8.kubernetes.api.model.storagemigration.v1.StorageVersionMigrationList",
         "io.fabric8.kubernetes.api.model.storagemigration.v1beta1.StorageVersionMigration",
         "io.fabric8.kubernetes.api.model.storagemigration.v1beta1.StorageVersionMigrationList"
+      ]
+    },
+    "io.grpc:grpc-core": {
+      "io.grpc.LoadBalancerProvider": [
+        "io.grpc.internal.PickFirstLoadBalancerProvider"
+      ],
+      "io.grpc.NameResolverProvider": [
+        "io.grpc.internal.DnsNameResolverProvider"
+      ]
+    },
+    "io.grpc:grpc-netty-shaded": {
+      "io.grpc.ManagedChannelProvider": [
+        "io.grpc.netty.shaded.io.grpc.netty.NettyChannelProvider",
+        "io.grpc.netty.shaded.io.grpc.netty.UdsNettyChannelProvider"
+      ],
+      "io.grpc.NameResolverProvider": [
+        "io.grpc.netty.shaded.io.grpc.netty.UdsNameResolverProvider"
+      ],
+      "io.grpc.ServerProvider": [
+        "io.grpc.netty.shaded.io.grpc.netty.NettyServerProvider"
+      ],
+      "reactor.blockhound.integration.BlockHoundIntegration": [
+        "io.grpc.netty.shaded.io.netty.util.internal.Hidden$NettyBlockHoundIntegration"
+      ]
+    },
+    "io.grpc:grpc-services": {
+      "io.grpc.LoadBalancerProvider": [
+        "io.grpc.protobuf.services.internal.HealthCheckingRoundRobinLoadBalancerProvider"
+      ]
+    },
+    "io.grpc:grpc-util": {
+      "io.grpc.LoadBalancerProvider": [
+        "io.grpc.util.OutlierDetectionLoadBalancerProvider",
+        "io.grpc.util.SecretRoundRobinLoadBalancerProvider$Provider"
       ]
     },
     "io.lettuce:lettuce-core": {

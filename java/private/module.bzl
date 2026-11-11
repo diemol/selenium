@@ -18,6 +18,17 @@ JavaModuleInfo = provider(
     },
 )
 
+# Jars that cannot be on a module path, because they share packages with each other. They stay
+# normal dependencies; jdeps only skips them when it derives the module-info.
+_NOT_ON_MODULE_PATH = [
+    "temporal-sdk-",
+    "temporal-serviceclient-",
+]
+
+def _is_on_module_path(jar):
+    name = jar.basename.removeprefix("processed_")
+    return not [prefix for prefix in _NOT_ON_MODULE_PATH if name.startswith(prefix)]
+
 # In order to construct the module path, we do this:
 #  * `JavaModuleInfo`: use the module path from that
 #  * maven coordinates: add the runtime output jars to the module path
@@ -104,7 +115,7 @@ def _java_module_impl(ctx):
 
     # Now that we have a single jar, derive the module info.
     all_jars = depset(transitive = [info.module_path for info in all_infos]).to_list()
-    module_path_jars = depset(transitive = [info.module_path for info in all_infos])
+    module_path_jars = [jar for jar in all_jars if _is_on_module_path(jar)]
 
     module_info_jar = ctx.actions.declare_file("%s-module-info.jar" % ctx.attr.name)
     args = ctx.actions.args()
@@ -114,6 +125,8 @@ def _java_module_impl(ctx):
     args.add_all(ctx.attr.hides, before_each = "--hides")
     args.add_all(ctx.attr.uses, before_each = "--uses")
     args.add_all(module_path_jars, before_each = "--module-path")
+    if len(module_path_jars) < len(all_jars):
+        args.add("--ignore-missing-deps")
     args.add_all(ctx.attr.opens_to, before_each = "--open-to")
 
     ctx.actions.run(

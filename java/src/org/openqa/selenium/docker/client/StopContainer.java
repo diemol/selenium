@@ -17,6 +17,7 @@
 
 package org.openqa.selenium.docker.client;
 
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static org.openqa.selenium.docker.client.DockerMessages.throwIfNecessary;
 import static org.openqa.selenium.remote.http.HttpMethod.POST;
 
@@ -25,6 +26,7 @@ import org.openqa.selenium.docker.ContainerId;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.remote.http.HttpHandler;
 import org.openqa.selenium.remote.http.HttpRequest;
+import org.openqa.selenium.remote.http.HttpResponse;
 
 class StopContainer {
   private final HttpHandler client;
@@ -47,6 +49,11 @@ class StopContainer {
             .addHeader("Content-Type", "text/plain")
             .addQueryParameter("t", seconds);
 
-    throwIfNecessary(client.execute(request), "Unable to stop container: %s", id);
+    HttpResponse response = client.execute(request);
+    // 304 means the container is already stopped, so stopping it again is a no-op.
+    if (response.getStatus() == HTTP_NOT_MODIFIED) {
+      return;
+    }
+    throwIfNecessary(response, "Unable to stop container: %s", id);
   }
 }

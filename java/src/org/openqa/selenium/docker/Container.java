@@ -18,64 +18,64 @@
 package org.openqa.selenium.docker;
 
 import java.time.Duration;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openqa.selenium.internal.Require;
-import org.openqa.selenium.remote.http.Contents;
 
+/**
+ * A handle to a Docker container. It keeps no state of its own: every call asks Docker, so a handle
+ * made from an id, for example after a restart, works the same as the one {@link Docker#create}
+ * returns. Errors are thrown, so callers can retry.
+ */
 public class Container {
 
   private static final Logger LOG = Logger.getLogger(Container.class.getName());
   private final DockerProtocol protocol;
   private final ContainerId id;
-  private boolean running;
 
   public Container(DockerProtocol protocol, ContainerId id) {
     this.protocol = Require.nonNull("Protocol", protocol);
     this.id = Require.nonNull("Container id", id);
-    this.running = false;
-    LOG.info("Created container " + id);
   }
 
   public ContainerId getId() {
     return id;
   }
 
+  /** Starts the container. Starting a running container is not an error. */
   public void start() {
-    LOG.info("Starting container " + getId());
+    LOG.info("Starting container " + id);
     protocol.startContainer(id);
-    this.running = true;
   }
 
+  /**
+   * Stops the container. Stopping a stopped container is not an error.
+   *
+   * @param timeout how long Docker waits before it kills the container
+   */
   public void stop(Duration timeout) {
     Require.nonNull("Timeout to wait for", timeout);
+    LOG.info("Stopping container " + id);
+    protocol.stopContainer(id, timeout);
+  }
 
-    if (this.running) {
-      LOG.info("Stopping container " + getId());
-      try {
-        protocol.stopContainer(id, timeout);
-        this.running = false;
-      } catch (RuntimeException e) {
-        LOG.log(Level.WARNING, "Unable to stop container: " + e.getMessage(), e);
-      }
-    }
+  /** Removes the container, stopping it first if needed. Removing a missing one is not an error. */
+  public void remove() {
+    LOG.info("Removing container " + id);
+    protocol.removeContainer(id);
   }
 
   public ContainerInfo inspect() {
-    LOG.info("Inspecting container " + getId());
-
-    return protocol.inspectContainer(getId());
+    LOG.info("Inspecting container " + id);
+    return protocol.inspectContainer(id);
   }
 
+  /**
+   * Returns the stdout and stderr of the container, in Docker's multiplexed stream format.
+   *
+   * @return the container logs
+   */
   public ContainerLogs getLogs() {
-    if (this.running) {
-      LOG.info("Getting logs " + getId());
-      return protocol.getContainerLogs(getId());
-    }
-    return new ContainerLogs(getId(), Contents.empty());
-  }
-
-  public boolean isRunning() {
-    return running;
+    LOG.info("Getting logs " + id);
+    return protocol.getContainerLogs(id);
   }
 }
