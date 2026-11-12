@@ -1,0 +1,20 @@
+load("//java:defs.bzl", "JUNIT5_DEPS", "artifact", "java_test_suite")
+load("//java:version.bzl", "TOOLS_JAVA_VERSION")
+
+java_test_suite(
+    name = "small-tests",
+    size = "small",
+    srcs = glob(["*Test.java"]),
+    javacopts = [
+        "--release",
+        TOOLS_JAVA_VERSION,
+    ],
+    deps = [
+        "//java/src/org/openqa/selenium/grid/temporal",
+        artifact("io.temporal:temporal-sdk"),
+        artifact("io.temporal:temporal-serviceclient"),
+        artifact("io.temporal:temporal-testing"),
+        artifact("org.junit.jupiter:junit-jupiter-api"),
+        artifact("org.assertj:assertj-core"),
+    ] + JUNIT5_DEPS,
+)

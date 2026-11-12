@@ -18,25 +18,20 @@
 package org.openqa.selenium.grid.node.docker;
 
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowClientOptions;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
-import java.time.Duration;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.jspecify.annotations.Nullable;
 import org.openqa.selenium.docker.Docker;
-import org.openqa.selenium.grid.config.ConfigException;
 import org.openqa.selenium.grid.node.Node;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.remote.http.HttpClient;
 
 /** Connects the Docker Node to Temporal and starts its Worker. */
 final class DockerSessionWorker {
 
   private static final Logger LOG = Logger.getLogger(DockerSessionWorker.class.getName());
-  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
   private DockerSessionWorker() {
     // Static utility.
@@ -48,27 +43,7 @@ final class DockerSessionWorker {
       HttpClient.Factory clientFactory,
       DockerContainers containers,
       Supplier<@Nullable Node> node) {
-    String target = options.getTarget();
-    WorkflowServiceStubsOptions.Builder stubs =
-        WorkflowServiceStubsOptions.newBuilder().setTarget(target);
-    // Temporal Cloud: TLS plus the API key on every call. A local server needs neither.
-    options.getApiKey().ifPresent(apiKey -> stubs.setEnableHttps(true).addApiKey(() -> apiKey));
-    WorkflowServiceStubs service;
-    try {
-      service = WorkflowServiceStubs.newConnectedServiceStubs(stubs.build(), CONNECT_TIMEOUT);
-    } catch (RuntimeException e) {
-      throw new ConfigException(
-          "Unable to reach the Temporal Service at %s. The Docker Node needs it to manage"
-              + " sessions. For local use, run `temporal server start-dev`. For Temporal Cloud,"
-              + " set --temporal-target, --temporal-namespace and the %s environment variable."
-              + " Cause: %s",
-          target, TemporalOptions.API_KEY_ENV, e.getMessage());
-    }
-
-    WorkflowClient client =
-        WorkflowClient.newInstance(
-            service,
-            WorkflowClientOptions.newBuilder().setNamespace(options.getNamespace()).build());
+    WorkflowClient client = options.connect();
 
     String taskQueue = options.getTaskQueue();
     WorkerFactory factory = WorkerFactory.newInstance(client);
@@ -83,14 +58,14 @@ final class DockerSessionWorker {
             new Thread(
                 () -> {
                   factory.shutdown();
-                  service.shutdown();
+                  client.getWorkflowServiceStubs().shutdown();
                 },
                 "temporal-worker-shutdown"));
 
     LOG.info(
         String.format(
             "Temporal Worker started (target %s, namespace %s, task queue %s, %s)",
-            target,
+            options.getTarget(),
             options.getNamespace(),
             taskQueue,
             options.getApiKey().isPresent() ? "API key" : "no authentication"));

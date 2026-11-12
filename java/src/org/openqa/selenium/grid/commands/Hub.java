@@ -58,6 +58,7 @@ import org.openqa.selenium.grid.server.Server;
 import org.openqa.selenium.grid.sessionmap.local.LocalSessionMap;
 import org.openqa.selenium.grid.sessionqueue.config.NewSessionQueueOptions;
 import org.openqa.selenium.grid.sessionqueue.local.LocalNewSessionQueue;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.grid.web.CombinedHandler;
 import org.openqa.selenium.grid.web.GridUiRoute;
 import org.openqa.selenium.grid.web.RoutableHttpClientFactory;
@@ -162,6 +163,7 @@ public class Hub extends TemplateGridServerCommand {
             distributorOptions.getNewSessionThreadPoolSize(),
             distributorOptions.getSlotMatcher(),
             distributorOptions.getPurgeNodesInterval());
+    distributor.registerNodesThroughTemporal(new TemporalOptions(config));
     handler.addHandler(distributor);
 
     Router router = new Router(tracer, clientFactory, sessions, queue, distributor);
