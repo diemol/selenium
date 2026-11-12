@@ -39,6 +39,7 @@ java_library(
         "//java/src/org/openqa/selenium/grid/sessionqueue",
         "//java/src/org/openqa/selenium/grid/sessionqueue/config",
         "//java/src/org/openqa/selenium/grid/sessionqueue/local",
+        "//java/src/org/openqa/selenium/grid/temporal",
         "//java/src/org/openqa/selenium/grid/web",
         "//java/src/org/openqa/selenium/json",
         "//java/src/org/openqa/selenium/netty/server",

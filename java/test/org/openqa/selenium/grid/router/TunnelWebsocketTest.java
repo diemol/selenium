@@ -544,8 +544,7 @@ class TunnelWebsocketTest {
             false,
             Duration.ofSeconds(5),
             Runtime.getRuntime().availableProcessors(),
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(node);
 
     // Wait for node capacity, then start the Router so routerUrl is known before newSession().

@@ -23,7 +23,6 @@ import static org.openqa.selenium.grid.data.Availability.UP;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +39,6 @@ import org.openqa.selenium.grid.config.Config;
 import org.openqa.selenium.grid.data.Availability;
 import org.openqa.selenium.grid.data.NodeDrainStarted;
 import org.openqa.selenium.grid.data.NodeId;
-import org.openqa.selenium.grid.data.NodeRemovedEvent;
 import org.openqa.selenium.grid.data.NodeRestartedEvent;
 import org.openqa.selenium.grid.data.NodeStatus;
 import org.openqa.selenium.grid.data.Session;
@@ -57,13 +55,9 @@ public class LocalGridModel extends GridModel {
 
   private static final SessionId RESERVED = new SessionId("reserved");
   private static final Logger LOG = Logger.getLogger(LocalGridModel.class.getName());
-  // How many times a node's heartbeat duration needs to be exceeded before the node is considered
-  // purgeable.
-  private static final int PURGE_TIMEOUT_MULTIPLIER = 4;
   private static final int UNHEALTHY_THRESHOLD = 4;
   private final ReadWriteLock lock = new ReentrantReadWriteLock(/* fair */ true);
   private final Set<NodeStatus> nodes = Collections.newSetFromMap(new ConcurrentHashMap<>());
-  private final Map<NodeId, Instant> nodePurgeTimes = new ConcurrentHashMap<>();
   private final Map<NodeId, Integer> nodeHealthCount = new ConcurrentHashMap<>();
   private final EventBus events;
 
@@ -104,7 +98,6 @@ public class LocalGridModel extends GridModel {
           LOG.log(Debug.getDebugLogLevel(), "Refreshing node with id {0}", node.getNodeId());
           NodeStatus refreshed = rewrite(node, next.getAvailability());
           nodes.add(refreshed);
-          nodePurgeTimes.put(refreshed.getNodeId(), Instant.now());
           updateHealthCheckCount(refreshed.getNodeId(), refreshed.getAvailability());
 
           return;
@@ -145,7 +138,6 @@ public class LocalGridModel extends GridModel {
           new Object[] {node.getNodeId(), node.getExternalUri()});
       NodeStatus refreshed = rewrite(node, DOWN);
       nodes.add(refreshed);
-      nodePurgeTimes.put(refreshed.getNodeId(), Instant.now());
       updateHealthCheckCount(refreshed.getNodeId(), refreshed.getAvailability());
     } finally {
       writeLock.unlock();
@@ -157,62 +149,6 @@ public class LocalGridModel extends GridModel {
   }
 
   @Override
-  public void refresh(NodeStatus status) {
-    Require.nonNull("Node status", status);
-
-    Lock writeLock = lock.writeLock();
-    writeLock.lock();
-    try {
-      Iterator<NodeStatus> iterator = nodes.iterator();
-      while (iterator.hasNext()) {
-        NodeStatus node = iterator.next();
-
-        if (node.getNodeId().equals(status.getNodeId())) {
-          iterator.remove();
-
-          // if the node was marked as "down", keep it down until a health check passes:
-          // just because the node can hit the event bus doesn't mean it's reachable
-          if (node.getAvailability() == DOWN) {
-            nodes.add(rewrite(status, DOWN));
-          } else {
-            // Otherwise, trust what it tells us.
-            nodes.add(status);
-          }
-
-          nodePurgeTimes.put(status.getNodeId(), Instant.now());
-
-          return;
-        }
-      }
-    } finally {
-      writeLock.unlock();
-    }
-  }
-
-  @Override
-  public void touch(NodeStatus nodeStatus) {
-    Require.nonNull("Node ID", nodeStatus);
-
-    Lock writeLock = lock.writeLock();
-    writeLock.lock();
-    try {
-      NodeStatus node = getNode(nodeStatus.getNodeId());
-      if (node != null) {
-        nodePurgeTimes.put(node.getNodeId(), Instant.now());
-        // Covers the case where the Node might be DOWN in the Grid model (e.g. Node lost
-        // connectivity for a while). The Node reports itself back as UP.
-        if (node.getAvailability() != nodeStatus.getAvailability()
-            && nodeStatus.getAvailability() == UP) {
-          nodes.remove(node);
-          nodes.add(nodeStatus);
-        }
-      }
-    } finally {
-      writeLock.unlock();
-    }
-  }
-
-  @Override
   public void remove(NodeId id) {
     Require.nonNull("Node ID", id);
 
@@ -220,70 +156,10 @@ public class LocalGridModel extends GridModel {
     writeLock.lock();
     try {
       nodes.removeIf(n -> n.getNodeId().equals(id));
-      nodePurgeTimes.remove(id);
       nodeHealthCount.remove(id);
     } finally {
       writeLock.unlock();
     }
-  }
-
-  @Override
-  public void purgeDeadNodes() {
-    Map<NodeStatus, NodeStatus> replacements = new HashMap<>();
-    Set<NodeStatus> toRemove = new HashSet<>();
-
-    Lock writeLock = lock.writeLock();
-    writeLock.lock();
-    try {
-      for (NodeStatus node : nodes) {
-        NodeId id = node.getNodeId();
-        if (nodeHealthCount.getOrDefault(id, 0) > UNHEALTHY_THRESHOLD) {
-          LOG.info(
-              String.format(
-                  "Removing Node %s (uri: %s), unhealthy threshold has been reached",
-                  node.getNodeId(), node.getMaskedUri()));
-          toRemove.add(node);
-          break;
-        }
-
-        Instant now = Instant.now();
-        Instant lastTouched = nodePurgeTimes.getOrDefault(id, Instant.now());
-        Instant lostTime =
-            lastTouched.plus(
-                node.getHeartbeatPeriod().multipliedBy(PURGE_TIMEOUT_MULTIPLIER).dividedBy(2));
-        Instant deadTime =
-            lastTouched.plus(node.getHeartbeatPeriod().multipliedBy(PURGE_TIMEOUT_MULTIPLIER));
-
-        if (node.getAvailability() == UP && lostTime.isBefore(now)) {
-          LOG.info(
-              String.format(
-                  "Switching Node %s (uri: %s) from UP to DOWN",
-                  node.getNodeId(), node.getMaskedUri()));
-          replacements.put(node, rewrite(node, DOWN));
-          nodePurgeTimes.put(id, Instant.now());
-        } else if (node.getAvailability() == DOWN && deadTime.isBefore(now)) {
-          LOG.info(
-              String.format(
-                  "Removing Node %s (uri: %s), DOWN for too long",
-                  node.getNodeId(), node.getMaskedUri()));
-          toRemove.add(node);
-        }
-      }
-
-      replacements.forEach((before, after) -> {
-        nodes.remove(before);
-        nodes.add(after);
-      });
-      toRemove.forEach(node -> {
-        nodes.remove(node);
-        nodePurgeTimes.remove(node.getNodeId());
-        nodeHealthCount.remove(node.getNodeId());
-      });
-    } finally {
-      writeLock.unlock();
-    }
-
-    toRemove.forEach(node -> events.fire(new NodeRemovedEvent(node)));
   }
 
   @Override
@@ -300,11 +176,7 @@ public class LocalGridModel extends GridModel {
         return;
       }
 
-      if (availability.equals(node.getAvailability())) {
-        if (node.getAvailability() == UP) {
-          nodePurgeTimes.put(node.getNodeId(), Instant.now());
-        }
-      } else {
+      if (!availability.equals(node.getAvailability())) {
         LOG.info(
             String.format(
                 "Switching Node %s (uri: %s) from %s to %s",
@@ -313,7 +185,6 @@ public class LocalGridModel extends GridModel {
         NodeStatus refreshed = rewrite(node, availability);
         nodes.remove(node);
         nodes.add(refreshed);
-        nodePurgeTimes.put(node.getNodeId(), Instant.now());
       }
     } finally {
       writeLock.unlock();
@@ -477,6 +348,16 @@ public class LocalGridModel extends GridModel {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  /**
+   * Returns true when the Node failed more than {@code UNHEALTHY_THRESHOLD} health checks in a row.
+   *
+   * @param id the Node
+   * @return true when the Node should be removed for failing health checks
+   */
+  boolean isUnhealthy(NodeId id) {
+    return nodeHealthCount.getOrDefault(id, 0) > UNHEALTHY_THRESHOLD;
   }
 
   @Override

@@ -42,6 +42,7 @@ import org.openqa.selenium.grid.router.httpd.RouterServer;
 import org.openqa.selenium.grid.server.Server;
 import org.openqa.selenium.grid.sessionmap.httpd.SessionMapServer;
 import org.openqa.selenium.grid.sessionqueue.httpd.NewSessionQueueServer;
+import org.openqa.selenium.grid.testing.TemporalTestService;
 import org.openqa.selenium.grid.web.Values;
 import org.openqa.selenium.json.Json;
 import org.openqa.selenium.json.JsonOutput;
@@ -98,6 +99,7 @@ public enum DeploymentTypes {
         out.setPrettyPrint(false).write(capabilities);
       }
 
+      TemporalTestService temporal = new TemporalTestService();
       int publish = PortProber.findFreePort();
       int subscribe = PortProber.findFreePort();
 
@@ -115,7 +117,9 @@ public enum DeploymentTypes {
             "",
             "[sessionqueue]",
             "session-request-timeout = 100",
-            "session-retry-interval = 1"
+            "session-retry-interval = 1",
+            "",
+            temporal.toml()
           };
       Config baseConfig =
           new MemoizedConfig(
@@ -141,7 +145,7 @@ public enum DeploymentTypes {
 
       waitUntilReady(hub, Duration.ofSeconds(30));
 
-      return new Deployment(hub, hub::stop, node::stop);
+      return new Deployment(hub, hub::stop, node::stop, temporal::close);
     }
   },
   DISTRIBUTED {
@@ -152,6 +156,7 @@ public enum DeploymentTypes {
         out.setPrettyPrint(false).write(capabilities);
       }
 
+      TemporalTestService temporal = new TemporalTestService();
       int publish = PortProber.findFreePort();
       int subscribe = PortProber.findFreePort();
 
@@ -171,7 +176,9 @@ public enum DeploymentTypes {
             "",
             "[sessionqueue]",
             "session-request-timeout = 100",
-            "session-retry-interval = 1"
+            "session-retry-interval = 1",
+            "",
+            temporal.toml()
           };
 
       Config sharedConfig =
@@ -281,7 +288,8 @@ public enum DeploymentTypes {
           distributorServer::stop,
           sessionMapServer::stop,
           newSessionQueueServer::stop,
-          eventServer::stop);
+          eventServer::stop,
+          temporal::close);
     }
   };
 

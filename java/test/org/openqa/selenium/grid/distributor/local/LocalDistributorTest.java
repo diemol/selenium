@@ -137,8 +137,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(localNode);
     DistributorStatus status = distributor.getStatus();
 
@@ -178,8 +177,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(localNode);
 
     // Check the size
@@ -218,8 +216,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(localNode);
     distributor.add(localNode);
     DistributorStatus status = distributor.getStatus();
@@ -281,8 +278,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     distributor.add(node);
     wait.until(obj -> distributor.getStatus().hasCapacity());
@@ -363,8 +359,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     Capabilities caps = new ImmutableCapabilities("browserName", "cheese");
     for (URI nodeUri : List.of(new URI("http://example:1234"), new URI("http://example:5678"))) {
@@ -429,8 +424,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(localNode);
     assertThat(localNode.isDraining()).isFalse();
 
@@ -476,8 +470,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     distributor.add(localNode);
 
     localNode.drain();
@@ -509,8 +502,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     Capabilities caps = new ImmutableCapabilities("browserName", "cheese");
 
@@ -600,8 +592,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create two nodes - both initially have free slots
     URI nodeUri1 = new URI("http://example:1234");
@@ -702,8 +693,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create a node
     URI nodeUri = new URI("http://example:1234");
@@ -756,8 +746,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create a node
     URI nodeUri = new URI("http://example:1234");
@@ -809,8 +798,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create multiple nodes, some with free slots, some fully occupied
     List<Node> nodes = new ArrayList<>();
@@ -878,8 +866,7 @@ class LocalDistributorTest {
             true, // Enable rejectUnsupportedCaps
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create a node that supports Chrome with single slot
     URI nodeUri = new URI("http://example:1234");
@@ -953,8 +940,7 @@ class LocalDistributorTest {
             true, // Enable rejectUnsupportedCaps
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create a node that only supports Chrome
     URI nodeUri = new URI("http://example:1234");
@@ -1010,8 +996,7 @@ class LocalDistributorTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create nodes with single slot each
     List<Node> nodes = new ArrayList<>();

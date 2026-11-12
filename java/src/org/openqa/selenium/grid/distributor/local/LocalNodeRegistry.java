@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -54,12 +55,10 @@ import org.openqa.selenium.grid.data.Availability;
 import org.openqa.selenium.grid.data.DistributorStatus;
 import org.openqa.selenium.grid.data.NodeAddedEvent;
 import org.openqa.selenium.grid.data.NodeDrainComplete;
-import org.openqa.selenium.grid.data.NodeHeartBeatEvent;
 import org.openqa.selenium.grid.data.NodeId;
 import org.openqa.selenium.grid.data.NodeRemovedEvent;
 import org.openqa.selenium.grid.data.NodeRestartedEvent;
 import org.openqa.selenium.grid.data.NodeStatus;
-import org.openqa.selenium.grid.data.NodeStatusEvent;
 import org.openqa.selenium.grid.data.Session;
 import org.openqa.selenium.grid.data.SlotId;
 import org.openqa.selenium.grid.distributor.GridModel;
@@ -85,14 +84,13 @@ public class LocalNodeRegistry implements NodeRegistry {
   private final HttpClient.Factory clientFactory;
   private final Secret registrationSecret;
   private final Duration healthcheckInterval;
-  private final GridModel model;
+  private final LocalGridModel model;
+  private volatile Consumer<NodeId> unhealthyListener = this::removeAndNotify;
   private final Map<NodeId, Node> nodes;
   private final Map<NodeId, Runnable> allChecks = new ConcurrentHashMap<>();
   private final ReadWriteLock lock = new ReentrantReadWriteLock(/* fair */ true);
   private final ScheduledExecutorService nodeHealthCheckService;
   private final ExecutorService nodeHealthCheckExecutor;
-  private final Duration purgeNodesInterval;
-  private final ScheduledExecutorService purgeDeadNodesService;
   private final AtomicBoolean healthChecksInProgress = new AtomicBoolean(false);
 
   public LocalNodeRegistry(
@@ -101,9 +99,7 @@ public class LocalNodeRegistry implements NodeRegistry {
       HttpClient.Factory clientFactory,
       Secret registrationSecret,
       Duration healthcheckInterval,
-      ScheduledExecutorService nodeHealthCheckService,
-      Duration purgeNodesInterval,
-      ScheduledExecutorService purgeDeadNodesService) {
+      ScheduledExecutorService nodeHealthCheckService) {
     this.tracer = Require.nonNull("Tracer", tracer);
     this.bus = Require.nonNull("Event bus", bus);
     this.clientFactory = Require.nonNull("HTTP client factory", clientFactory);
@@ -111,27 +107,15 @@ public class LocalNodeRegistry implements NodeRegistry {
     this.healthcheckInterval = Require.nonNull("Health check interval", healthcheckInterval);
     this.nodeHealthCheckService =
         Require.nonNull("Node health check service", nodeHealthCheckService);
-    this.purgeNodesInterval = Require.nonNull("Purge nodes interval", purgeNodesInterval);
-    this.purgeDeadNodesService = Require.nonNull("Purge dead nodes service", purgeDeadNodesService);
 
     this.model = new LocalGridModel(bus);
     this.nodes = new ConcurrentHashMap<>();
 
     // Register listeners for node events
-    this.bus.addListener(NodeStatusEvent.listener(this::register));
-    this.bus.addListener(NodeStatusEvent.listener(model::refresh));
     this.bus.addListener(
         NodeRestartedEvent.listener(previousNodeStatus -> remove(previousNodeStatus.getNodeId())));
     this.bus.addListener(NodeRemovedEvent.listener(nodeStatus -> remove(nodeStatus.getNodeId())));
     this.bus.addListener(NodeDrainComplete.listener(this::remove));
-    this.bus.addListener(
-        NodeHeartBeatEvent.listener(nodeStatus -> {
-          if (nodes.containsKey(nodeStatus.getNodeId())) {
-            model.touch(nodeStatus);
-          } else {
-            register(nodeStatus);
-          }
-        }));
 
     // Schedule regular health checks
     this.nodeHealthCheckService.scheduleAtFixedRate(
@@ -149,15 +133,6 @@ public class LocalNodeRegistry implements NodeRegistry {
           t.setDaemon(true);
           return t;
         });
-
-    // Schedule node purging if interval is non-zero
-    if (!this.purgeNodesInterval.isZero()) {
-      this.purgeDeadNodesService.scheduleAtFixedRate(
-          GuardedRunnable.guard(model::purgeDeadNodes),
-          this.purgeNodesInterval.getSeconds(),
-          this.purgeNodesInterval.getSeconds(),
-          TimeUnit.SECONDS);
-    }
   }
 
   @Override
@@ -303,6 +278,29 @@ public class LocalNodeRegistry implements NodeRegistry {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  /**
+   * Called after a health check when a Node has failed too many checks in a row. By default the
+   * Node is removed at once. With Temporal, the Node's Workflow removes it.
+   *
+   * @param listener what to do with the Node
+   */
+  void onUnhealthyNode(Consumer<NodeId> listener) {
+    this.unhealthyListener = Require.nonNull("Listener", listener);
+  }
+
+  /**
+   * Removes the Node and fires {@link NodeRemovedEvent}, so the Session Map drops its sessions.
+   *
+   * @param id the Node
+   */
+  void removeAndNotify(NodeId id) {
+    model.getSnapshot().stream()
+        .filter(node -> node.getNodeId().equals(id))
+        .findFirst()
+        .ifPresent(node -> bus.fire(new NodeRemovedEvent(node)));
+    remove(id);
   }
 
   @Override
@@ -471,6 +469,9 @@ public class LocalNodeRegistry implements NodeRegistry {
       }
 
       updateNodeAvailability(node.getUri(), id, result.getAvailability());
+      if (model.isUnhealthy(id)) {
+        unhealthyListener.accept(id);
+      }
       if (checkFailed) {
         throw new HealthCheckFailedException("Node " + id, failedCheckException);
       }

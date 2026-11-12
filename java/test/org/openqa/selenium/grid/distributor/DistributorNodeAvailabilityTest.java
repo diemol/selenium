@@ -78,8 +78,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     local.add(node);
     local.add(node);
@@ -123,8 +122,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     Distributor distributor =
         new RemoteDistributor(
             tracer,
@@ -180,8 +178,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     handler.addHandler(local);
     local.add(alwaysDown);
     waitForAllNodesToMeetCondition(local, 1, DOWN);
@@ -237,7 +234,8 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
                     (id, caps) -> new Session(id, uri, stereotype, caps, Instant.now())))
             .advanced()
             .healthCheck(() -> {
-              if (count.get() <= 4) {
+              // 4 failed checks: the Node is removed only after more than 4 in a row.
+              if (count.get() < 4) {
                 count.incrementAndGet();
                 return new HealthCheck.Result(DOWN, "Down");
               }
@@ -260,8 +258,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     handler.addHandler(local);
     local.add(node);
 
@@ -316,8 +313,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     handler.addHandler(local);
     local.add(node);
     waitForAllNodesToMeetCondition(local, 1, DOWN);
@@ -370,8 +366,7 @@ public class DistributorNodeAvailabilityTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     local.add(node);
     waitToHaveCapacity(local);
 

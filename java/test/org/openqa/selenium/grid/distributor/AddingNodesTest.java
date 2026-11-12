@@ -50,7 +50,6 @@ import org.openqa.selenium.grid.data.CreateSessionResponse;
 import org.openqa.selenium.grid.data.DefaultSlotMatcher;
 import org.openqa.selenium.grid.data.NodeId;
 import org.openqa.selenium.grid.data.NodeStatus;
-import org.openqa.selenium.grid.data.NodeStatusEvent;
 import org.openqa.selenium.grid.data.Session;
 import org.openqa.selenium.grid.data.SessionClosedEvent;
 import org.openqa.selenium.grid.data.Slot;
@@ -143,8 +142,7 @@ class AddingNodesTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     distributor =
         new RemoteDistributor(
@@ -184,8 +182,7 @@ class AddingNodesTest {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
+            new DefaultSlotMatcher())) {
 
       distributor =
           new RemoteDistributor(
@@ -198,169 +195,6 @@ class AddingNodesTest {
       NodeStatus status = getOnlyElement(distributor.getStatus().getNodes());
       assertThat(getStereotypes(status).get(CAPS)).isEqualTo(1);
       assertThat(status.getSessionTimeout()).isEqualTo(ofSeconds(300));
-    }
-  }
-
-  @Test
-  void shouldBeAbleToRegisterNodesByListeningForEvents() throws URISyntaxException {
-    URI sessionUri = new URI("http://example:1234");
-    Node node =
-        LocalNode.builder(tracer, bus, externalUrl.toURI(), externalUrl.toURI(), registrationSecret)
-            .add(
-                CAPS,
-                new TestSessionFactory(
-                    (id, caps) -> new Session(id, sessionUri, stereotype, caps, Instant.now())))
-            .build();
-
-    try (LocalDistributor local =
-        new LocalDistributor(
-            tracer,
-            bus,
-            new PassthroughHttpClient.Factory(node),
-            sessions,
-            queue,
-            new DefaultSlotSelector(),
-            registrationSecret,
-            Duration.ofMinutes(5),
-            false,
-            Duration.ofSeconds(5),
-            newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
-
-      distributor =
-          new RemoteDistributor(
-              tracer, new PassthroughHttpClient.Factory(local), externalUrl, registrationSecret);
-
-      bus.fire(new NodeStatusEvent(node.getStatus()));
-
-      wait.until(obj -> distributor.getStatus().hasCapacity());
-
-      NodeStatus status = getOnlyElement(distributor.getStatus().getNodes());
-      assertThat(getStereotypes(status).get(CAPS)).isEqualTo(1);
-    }
-  }
-
-  @Test
-  void shouldKeepOnlyOneNodeWhenTwoRegistrationsHaveTheSameUriByListeningForEvents()
-      throws URISyntaxException {
-    URI sessionUri = new URI("http://example:1234");
-    Node firstNode =
-        LocalNode.builder(tracer, bus, externalUrl.toURI(), externalUrl.toURI(), registrationSecret)
-            .add(
-                CAPS,
-                new TestSessionFactory(
-                    (id, caps) -> new Session(id, sessionUri, stereotype, caps, Instant.now())))
-            .build();
-    Node secondNode =
-        LocalNode.builder(tracer, bus, externalUrl.toURI(), externalUrl.toURI(), registrationSecret)
-            .add(
-                CAPS,
-                new TestSessionFactory(
-                    (id, caps) -> new Session(id, sessionUri, stereotype, caps, Instant.now())))
-            .build();
-    handler.addHandler(firstNode);
-    handler.addHandler(secondNode);
-
-    try (LocalDistributor local =
-        new LocalDistributor(
-            tracer,
-            bus,
-            new PassthroughHttpClient.Factory(handler),
-            sessions,
-            queue,
-            new DefaultSlotSelector(),
-            registrationSecret,
-            Duration.ofMinutes(5),
-            false,
-            Duration.ofSeconds(5),
-            newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
-
-      distributor =
-          new RemoteDistributor(
-              tracer, new PassthroughHttpClient.Factory(local), externalUrl, registrationSecret);
-
-      bus.fire(new NodeStatusEvent(firstNode.getStatus()));
-      bus.fire(new NodeStatusEvent(secondNode.getStatus()));
-
-      wait.until(obj -> distributor.getStatus());
-
-      Set<NodeStatus> nodes = distributor.getStatus().getNodes();
-
-      assertThat(nodes).hasSize(1);
-    }
-  }
-
-  @Test
-  void distributorShouldUpdateStateOfExistingNodeWhenNodePublishesStateChange()
-      throws URISyntaxException {
-    URI sessionUri = new URI("http://example:1234");
-    Node node =
-        LocalNode.builder(tracer, bus, externalUrl.toURI(), externalUrl.toURI(), registrationSecret)
-            .add(
-                CAPS,
-                new TestSessionFactory(
-                    (id, caps) -> new Session(id, sessionUri, stereotype, caps, Instant.now())))
-            .build();
-
-    try (LocalDistributor local =
-        new LocalDistributor(
-            tracer,
-            bus,
-            new PassthroughHttpClient.Factory(node),
-            sessions,
-            queue,
-            new DefaultSlotSelector(),
-            registrationSecret,
-            Duration.ofMinutes(5),
-            false,
-            Duration.ofSeconds(5),
-            newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
-
-      distributor =
-          new RemoteDistributor(
-              tracer, new PassthroughHttpClient.Factory(local), externalUrl, registrationSecret);
-
-      bus.fire(new NodeStatusEvent(node.getStatus()));
-
-      // Start empty
-      wait.until(obj -> distributor.getStatus().hasCapacity());
-
-      NodeStatus nodeStatus = getOnlyElement(distributor.getStatus().getNodes());
-      assertThat(getStereotypes(nodeStatus).get(CAPS)).isEqualTo(1);
-
-      // Craft a status that makes it look like the node is busy, and post it on the bus.
-      NodeStatus status = node.getStatus();
-      NodeStatus crafted =
-          new NodeStatus(
-              status.getNodeId(),
-              status.getExternalUri(),
-              status.getMaxSessionCount(),
-              Set.of(
-                  new Slot(
-                      new SlotId(status.getNodeId(), UUID.randomUUID()),
-                      CAPS,
-                      Instant.now(),
-                      new Session(
-                          new SessionId(UUID.randomUUID()),
-                          sessionUri,
-                          CAPS,
-                          CAPS,
-                          Instant.now()))),
-              UP,
-              Duration.ofSeconds(10),
-              status.getSessionTimeout(),
-              status.getVersion(),
-              status.getOsInfo());
-
-      bus.fire(new NodeStatusEvent(crafted));
-
-      // We claimed the only slot is filled. Life is good.
-      wait.until(obj -> !distributor.getStatus().hasCapacity());
     }
   }
 

@@ -49,6 +49,7 @@
     "io.opentelemetry:opentelemetry-sdk-trace": 1165401435,
     "io.temporal:temporal-sdk": -370564544,
     "io.temporal:temporal-serviceclient": -663875974,
+    "io.temporal:temporal-test-server": -1188890084,
     "io.temporal:temporal-testing": 1205974314,
     "junit:junit": -744267592,
     "net.bytebuddy:byte-buddy": 164807332,

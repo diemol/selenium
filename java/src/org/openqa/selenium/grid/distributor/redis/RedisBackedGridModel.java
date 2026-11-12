@@ -254,7 +254,6 @@ public class RedisBackedGridModel extends GridModel {
     }
   }
 
-  @Override
   public void refresh(NodeStatus status) {
     Require.nonNull("Node status", status);
 
@@ -275,7 +274,6 @@ public class RedisBackedGridModel extends GridModel {
     redis.set(lastTouchKey(status.getNodeId()), String.valueOf(Instant.now().toEpochMilli()));
   }
 
-  @Override
   public void touch(NodeStatus nodeStatus) {
     Require.nonNull("Node status", nodeStatus);
 
@@ -320,7 +318,6 @@ public class RedisBackedGridModel extends GridModel {
     }
   }
 
-  @Override
   public void purgeDeadNodes() {
     Set<NodeStatus> toRemove = new HashSet<>();
 

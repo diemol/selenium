@@ -92,8 +92,7 @@ public class SessionSchedulingTest extends DistributorTestBase {
                 false,
                 Duration.ofSeconds(5),
                 newSessionThreadPoolSize,
-                new DefaultSlotMatcher(),
-                Duration.ofSeconds(30))
+                new DefaultSlotMatcher())
             .add(heavy)
             .add(medium)
             .add(lightest)
@@ -143,8 +142,7 @@ public class SessionSchedulingTest extends DistributorTestBase {
                 false,
                 Duration.ofSeconds(5),
                 newSessionThreadPoolSize,
-                new DefaultSlotMatcher(),
-                Duration.ofSeconds(30))
+                new DefaultSlotMatcher())
             .add(leastRecent);
     waitToHaveCapacity(local);
 
@@ -218,8 +216,7 @@ public class SessionSchedulingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     local.add(node);
     waitToHaveCapacity(local);
@@ -268,8 +265,7 @@ public class SessionSchedulingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
 
     // Create all three Capability types
     Capabilities edge = new ImmutableCapabilities("browserName", "edge");

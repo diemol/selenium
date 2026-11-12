@@ -18,7 +18,6 @@
 package org.openqa.selenium.grid.distributor.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openqa.selenium.grid.data.Availability.DOWN;
 import static org.openqa.selenium.grid.data.Availability.UP;
 
 import java.net.URI;
@@ -28,8 +27,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +35,6 @@ import org.openqa.selenium.events.EventBus;
 import org.openqa.selenium.events.local.GuavaEventBus;
 import org.openqa.selenium.grid.data.Availability;
 import org.openqa.selenium.grid.data.NodeId;
-import org.openqa.selenium.grid.data.NodeRemovedEvent;
 import org.openqa.selenium.grid.data.NodeRestartedEvent;
 import org.openqa.selenium.grid.data.NodeStatus;
 
@@ -65,141 +61,6 @@ class LocalGridModelDeadlockTest {
   void setUp() {
     events = new GuavaEventBus();
     model = new LocalGridModel(events);
-  }
-
-  /**
-   * Simulates the deadlock scenario between purgeDeadNodes and a concurrent operation that holds an
-   * external lock (like LocalNodeRegistry) while calling into LocalGridModel.
-   *
-   * <p>Before the fix: This would deadlock because NodeRemovedEvent was fired while holding
-   * LocalGridModel.lock, and the event listener would try to acquire an external lock that another
-   * thread holds while waiting for LocalGridModel.lock.
-   *
-   * <p>After the fix: Events are fired outside the lock, preventing deadlock.
-   */
-  @Test
-  void shouldNotDeadlockWhenPurgingNodesWhileUpdatingAvailability() throws Exception {
-    NodeId nodeId = new NodeId(UUID.randomUUID());
-    NodeStatus node = createNodeStatus(nodeId, UP);
-    model.add(node);
-
-    // Mark the node as unhealthy enough times to trigger removal during purge
-    for (int i = 0; i <= 5; i++) {
-      model.updateHealthCheckCount(nodeId, DOWN);
-    }
-
-    // Simulate the external lock that LocalNodeRegistry would hold
-    Object externalLock = new Object();
-
-    AtomicBoolean deadlockDetected = new AtomicBoolean(false);
-    CountDownLatch eventFired = new CountDownLatch(1);
-
-    // Register a listener that simulates LocalNodeRegistry.remove()
-    // which would try to acquire the external lock
-    events.addListener(
-        NodeRemovedEvent.listener(status -> {
-          synchronized (externalLock) {
-            // Simulate work that LocalNodeRegistry.remove() does
-            eventFired.countDown();
-          }
-        }));
-
-    CountDownLatch thread1Started = new CountDownLatch(1);
-    CountDownLatch thread2Started = new CountDownLatch(1);
-    CountDownLatch testComplete = new CountDownLatch(2);
-
-    ExecutorService executor = Executors.newFixedThreadPool(2);
-
-    // Thread 1: Holds external lock and calls model.setAvailability()
-    executor.submit(() -> {
-      try {
-        thread1Started.countDown();
-        thread2Started.await(1, TimeUnit.SECONDS);
-
-        synchronized (externalLock) {
-          // This simulates LocalNodeRegistry.updateNodeAvailability()
-          // which holds its lock and calls model.setAvailability()
-          model.setAvailability(nodeId, UP);
-        }
-      } catch (Exception e) {
-        // Ignore interruption
-      } finally {
-        testComplete.countDown();
-      }
-    });
-
-    // Thread 2: Calls purgeDeadNodes which fires event
-    executor.submit(() -> {
-      try {
-        thread2Started.countDown();
-        thread1Started.await(1, TimeUnit.SECONDS);
-
-        model.purgeDeadNodes();
-      } catch (Exception e) {
-        // Ignore interruption
-      } finally {
-        testComplete.countDown();
-      }
-    });
-
-    // Wait for completion with timeout - if deadlock occurs, this will timeout
-    boolean completed = testComplete.await(5, TimeUnit.SECONDS);
-    executor.shutdownNow();
-
-    if (!completed) {
-      deadlockDetected.set(true);
-    }
-
-    assertThat(deadlockDetected.get())
-        .as(
-            "Deadlock should not occur when purging nodes while another thread updates"
-                + " availability")
-        .isFalse();
-  }
-
-  /**
-   * Verifies that NodeRemovedEvent is fired AFTER the lock is released in purgeDeadNodes().
-   *
-   * <p>This is a more direct test: when the event fires, we verify we can call another model method
-   * that requires the lock, proving the lock was released before the event was fired.
-   */
-  @Test
-  void purgeDeadNodesShouldFireEventsOutsideLock() throws Exception {
-    NodeId nodeId = new NodeId(UUID.randomUUID());
-    NodeStatus node = createNodeStatus(nodeId, DOWN);
-    model.add(node);
-
-    // Mark unhealthy enough times to trigger removal
-    for (int i = 0; i <= 5; i++) {
-      model.updateHealthCheckCount(nodeId, DOWN);
-    }
-
-    AtomicBoolean canAcquireLock = new AtomicBoolean(false);
-    CountDownLatch eventFired = new CountDownLatch(1);
-
-    // When event fires, try to call another model method that needs the lock
-    events.addListener(
-        NodeRemovedEvent.listener(status -> {
-          try {
-            // This needs the read lock - if event is fired inside write lock,
-            // this would work due to lock downgrading, but we verify the pattern
-            model.getSnapshot();
-            canAcquireLock.set(true);
-          } catch (Exception e) {
-            canAcquireLock.set(false);
-          }
-          eventFired.countDown();
-        }));
-
-    model.purgeDeadNodes();
-
-    // Wait for event to be processed
-    boolean eventProcessed = eventFired.await(5, TimeUnit.SECONDS);
-
-    assertThat(eventProcessed).as("Event should have been fired").isTrue();
-    assertThat(canAcquireLock.get())
-        .as("Should be able to acquire lock in event listener, proving event fired outside lock")
-        .isTrue();
   }
 
   /**
