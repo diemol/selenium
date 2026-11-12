@@ -32,6 +32,17 @@ public interface DockerProtocol {
 
   void stopContainer(ContainerId id, Duration timeout) throws DockerException;
 
+  /**
+   * Removes a container, stopping it first if it is running. Removing a container that does not
+   * exist is not an error.
+   *
+   * @param id the container id or name
+   * @throws DockerException when the daemon refuses to remove the container
+   */
+  default void removeContainer(ContainerId id) throws DockerException {
+    throw new UnsupportedOperationException("Removing containers is not supported");
+  }
+
   ContainerInfo inspectContainer(ContainerId id) throws DockerException;
 
   ContainerLogs getContainerLogs(ContainerId id) throws DockerException;

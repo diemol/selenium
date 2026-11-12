@@ -42,6 +42,7 @@ public class DockerClient implements DockerProtocol {
   private final CreateContainer createContainer;
   private final StartContainer startContainer;
   private final StopContainer stopContainer;
+  private final RemoveContainer removeContainer;
   private final IsContainerPresent isContainerPresent;
   private final InspectContainer inspectContainer;
   private final GetContainerLogs containerLogs;
@@ -64,6 +65,7 @@ public class DockerClient implements DockerProtocol {
     createContainer = new CreateContainer(this, client, apiVersion, adapter);
     startContainer = new StartContainer(client, apiVersion);
     stopContainer = new StopContainer(client, apiVersion);
+    removeContainer = new RemoveContainer(client, apiVersion);
     isContainerPresent = new IsContainerPresent(client, apiVersion);
     inspectContainer = new InspectContainer(client, apiVersion, adapter);
     containerLogs = new GetContainerLogs(client, apiVersion);
@@ -143,6 +145,15 @@ public class DockerClient implements DockerProtocol {
     LOG.fine("Stopping container: " + id);
 
     stopContainer.apply(id, timeout);
+  }
+
+  @Override
+  public void removeContainer(ContainerId id) throws DockerException {
+    Require.nonNull("Container id", id);
+
+    LOG.fine("Removing container: " + id);
+
+    removeContainer.apply(id);
   }
 
   @Override

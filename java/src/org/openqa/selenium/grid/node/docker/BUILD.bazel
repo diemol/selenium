@@ -22,6 +22,9 @@ java_library(
         "//java/src/org/openqa/selenium/support",
         artifact("com.beust:jcommander"),
         artifact("com.google.guava:guava"),
+        artifact("io.temporal:temporal-sdk"),
+        artifact("io.temporal:temporal-serviceclient"),
         artifact("org.jspecify:jspecify"),
+        artifact("org.slf4j:slf4j-api"),
     ],
 )
