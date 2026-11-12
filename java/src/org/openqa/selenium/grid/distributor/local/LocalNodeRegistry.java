@@ -84,6 +84,7 @@ public class LocalNodeRegistry implements NodeRegistry {
   private final EventBus bus;
   private final HttpClient.Factory clientFactory;
   private final Secret registrationSecret;
+  private volatile boolean registerFromEvents = true;
   private final Duration healthcheckInterval;
   private final GridModel model;
   private final Map<NodeId, Node> nodes;
@@ -118,7 +119,7 @@ public class LocalNodeRegistry implements NodeRegistry {
     this.nodes = new ConcurrentHashMap<>();
 
     // Register listeners for node events
-    this.bus.addListener(NodeStatusEvent.listener(this::register));
+    this.bus.addListener(NodeStatusEvent.listener(this::registerFromEvent));
     this.bus.addListener(NodeStatusEvent.listener(model::refresh));
     this.bus.addListener(
         NodeRestartedEvent.listener(previousNodeStatus -> remove(previousNodeStatus.getNodeId())));
@@ -129,7 +130,7 @@ public class LocalNodeRegistry implements NodeRegistry {
           if (nodes.containsKey(nodeStatus.getNodeId())) {
             model.touch(nodeStatus);
           } else {
-            register(nodeStatus);
+            registerFromEvent(nodeStatus);
           }
         }));
 
@@ -157,6 +158,20 @@ public class LocalNodeRegistry implements NodeRegistry {
           this.purgeNodesInterval.getSeconds(),
           this.purgeNodesInterval.getSeconds(),
           TimeUnit.SECONDS);
+    }
+  }
+
+  /**
+   * Stops adding Nodes from event bus messages. Used when Nodes register through Temporal, so the
+   * membership Workflow is the only way in.
+   */
+  void stopRegisteringFromEvents() {
+    registerFromEvents = false;
+  }
+
+  private void registerFromEvent(NodeStatus status) {
+    if (registerFromEvents) {
+      register(status);
     }
   }
 

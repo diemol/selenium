@@ -52,6 +52,7 @@ import org.openqa.selenium.grid.config.ConfigException;
 import org.openqa.selenium.grid.node.Node;
 import org.openqa.selenium.grid.node.SessionFactory;
 import org.openqa.selenium.grid.node.config.NodeOptions;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.internal.Multimap;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.json.Json;

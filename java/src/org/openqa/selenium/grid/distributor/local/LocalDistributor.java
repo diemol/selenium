@@ -28,6 +28,9 @@ import static org.openqa.selenium.remote.tracing.AttributeKey.SESSION_URI;
 import static org.openqa.selenium.remote.tracing.Tags.EXCEPTION;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.temporal.client.WorkflowClient;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -90,6 +93,9 @@ import org.openqa.selenium.grid.sessionmap.SessionMap;
 import org.openqa.selenium.grid.sessionmap.config.SessionMapOptions;
 import org.openqa.selenium.grid.sessionqueue.NewSessionQueue;
 import org.openqa.selenium.grid.sessionqueue.config.NewSessionQueueOptions;
+import org.openqa.selenium.grid.temporal.NodeMembershipWorkflow;
+import org.openqa.selenium.grid.temporal.NodeMembershipWorkflowImpl;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.internal.Either;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.remote.SessionId;
@@ -231,20 +237,58 @@ public class LocalDistributor extends Distributor implements Closeable {
     NewSessionQueue sessionQueue =
         newSessionQueueOptions.getSessionQueue(
             "org.openqa.selenium.grid.sessionqueue.remote.RemoteNewSessionQueue");
-    return new LocalDistributor(
-        tracer,
-        bus,
-        clientFactory,
-        sessions,
-        sessionQueue,
-        distributorOptions.getSlotSelector(),
-        secretOptions.getRegistrationSecret(),
-        distributorOptions.getHealthCheckInterval(),
-        distributorOptions.shouldRejectUnsupportedCaps(),
-        newSessionQueueOptions.getSessionRequestRetryInterval(),
-        distributorOptions.getNewSessionThreadPoolSize(),
-        distributorOptions.getSlotMatcher(),
-        distributorOptions.getPurgeNodesInterval());
+    LocalDistributor distributor =
+        new LocalDistributor(
+            tracer,
+            bus,
+            clientFactory,
+            sessions,
+            sessionQueue,
+            distributorOptions.getSlotSelector(),
+            secretOptions.getRegistrationSecret(),
+            distributorOptions.getHealthCheckInterval(),
+            distributorOptions.shouldRejectUnsupportedCaps(),
+            newSessionQueueOptions.getSessionRequestRetryInterval(),
+            distributorOptions.getNewSessionThreadPoolSize(),
+            distributorOptions.getSlotMatcher(),
+            distributorOptions.getPurgeNodesInterval());
+    distributor.registerNodesThroughTemporal(new TemporalOptions(config));
+    return distributor;
+  }
+
+  /**
+   * When enabled, Nodes join, go DOWN, and leave only through their {@link NodeMembershipWorkflow}.
+   * The event bus no longer adds Nodes, and the purge no longer runs.
+   *
+   * @param temporal the Temporal settings; does nothing unless Node registration is enabled
+   */
+  public void registerNodesThroughTemporal(TemporalOptions temporal) {
+    if (!temporal.isNodeRegistrationEnabled()) {
+      return;
+    }
+    purgeDeadNodesService.shutdownNow();
+    ((LocalNodeRegistry) nodeRegistry).stopRegisteringFromEvents();
+
+    WorkflowClient client = temporal.connect();
+    WorkerFactory factory = WorkerFactory.newInstance(client);
+    Worker worker = factory.newWorker(NodeMembershipWorkflow.TASK_QUEUE);
+    worker.registerWorkflowImplementationTypes(NodeMembershipWorkflowImpl.class);
+    worker.registerActivitiesImplementations(
+        new NodeMembershipActivitiesImpl(nodeRegistry, bus, clientFactory, registrationSecret));
+    factory.start();
+
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  factory.shutdown();
+                  client.getWorkflowServiceStubs().shutdown();
+                },
+                "temporal-worker-shutdown"));
+    LOG.info(
+        String.format(
+            "Nodes register through Temporal (target %s, namespace %s, task queue %s)",
+            temporal.getTarget(), temporal.getNamespace(), NodeMembershipWorkflow.TASK_QUEUE));
   }
 
   @Override

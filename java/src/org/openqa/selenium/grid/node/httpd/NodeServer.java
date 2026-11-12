@@ -33,14 +33,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jspecify.annotations.Nullable;
 import org.openqa.selenium.BuildInfo;
 import org.openqa.selenium.cli.CliCommand;
+import org.openqa.selenium.concurrent.GuardedRunnable;
 import org.openqa.selenium.events.EventBus;
 import org.openqa.selenium.grid.TemplateGridServerCommand;
 import org.openqa.selenium.grid.config.CompoundConfig;
@@ -60,6 +64,9 @@ import org.openqa.selenium.grid.server.BaseServerOptions;
 import org.openqa.selenium.grid.server.EventBusOptions;
 import org.openqa.selenium.grid.server.NetworkOptions;
 import org.openqa.selenium.grid.server.Server;
+import org.openqa.selenium.grid.temporal.NodeMembershipClient;
+import org.openqa.selenium.grid.temporal.NodeMembershipSpec;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.netty.server.NettyServer;
 import org.openqa.selenium.remote.http.Contents;
@@ -203,6 +210,12 @@ public class NodeServer extends TemplateGridServerCommand {
       public NettyServer start() {
         super.start();
 
+        TemporalOptions temporal = new TemporalOptions(config);
+        if (temporal.isNodeRegistrationEnabled()) {
+          registerThroughTemporal(temporal, nodeOptions);
+          return this;
+        }
+
         // Unlimited attempts, every X seconds, we assume a Node should not need more than Y minutes
         // to register
         // X defaults to 10s and Y to 120 seconds, but the user can overwrite that.
@@ -281,5 +294,39 @@ public class NodeServer extends TemplateGridServerCommand {
         String.format(
             "Started Selenium node %s (revision %s): %s",
             info.getReleaseLabel(), info.getBuildRevision(), server.getUrl()));
+  }
+
+  /** One call returns the Distributor's answer. Heartbeats then keep the Node in the Grid. */
+  private void registerThroughTemporal(TemporalOptions temporal, NodeOptions nodeOptions) {
+    Node node = Require.nonNull("Node", this.node);
+    NodeMembershipSpec spec = new NodeMembershipSpec();
+    spec.nodeId = node.getId().toString();
+    spec.nodeUri = node.getUri().toString();
+    spec.heartbeatPeriodSeconds = nodeOptions.getHeartbeatPeriod().getSeconds();
+    spec.registerPeriodSeconds = nodeOptions.getRegisterPeriod().getSeconds();
+    NodeMembershipClient membership = new NodeMembershipClient(temporal.connect(), spec);
+
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "Node registration"));
+    LOG.info("Registering Node " + node.getUri() + " through Temporal");
+    executor.submit(() -> {
+      Optional<String> rejection = membership.register();
+      if (rejection.isPresent()) {
+        LOG.severe("Registration failed: " + rejection.get());
+        if (nodeOptions.getRegisterShutdownOnFailure()) {
+          LOG.severe("Shutting down");
+          System.exit(1);
+        }
+        executor.shutdown();
+        return;
+      }
+      node.register();
+      LOG.info("The Distributor accepted the Node");
+      executor.scheduleAtFixedRate(
+          GuardedRunnable.guard(membership::heartbeat),
+          spec.heartbeatPeriodSeconds,
+          spec.heartbeatPeriodSeconds,
+          TimeUnit.SECONDS);
+    });
   }
 }

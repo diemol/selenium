@@ -15,17 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package org.openqa.selenium.grid.node.docker;
+package org.openqa.selenium.grid.temporal;
 
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
+import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
+import java.time.Duration;
 import java.util.Optional;
 import org.openqa.selenium.grid.config.Config;
+import org.openqa.selenium.grid.config.ConfigException;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.net.HostIdentifier;
 
 /**
- * Where the Docker Node finds its Temporal Service. A local server needs only the target. Temporal
- * Cloud also needs its namespace and an API key, read from the {@code TEMPORAL_API_KEY} environment
- * variable so it never shows in a config file or the process list.
+ * Where Grid finds its Temporal Service. A local server needs only the target. Temporal Cloud also
+ * needs its namespace and an API key, read from the {@code TEMPORAL_API_KEY} environment variable
+ * so it never shows in a config file or the process list.
  */
 public class TemporalOptions {
 
@@ -33,11 +39,48 @@ public class TemporalOptions {
   static final String DEFAULT_TARGET = "127.0.0.1:7233";
   static final String DEFAULT_NAMESPACE = "default";
   static final String API_KEY_ENV = "TEMPORAL_API_KEY";
+  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
   private final Config config;
 
   public TemporalOptions(Config config) {
     this.config = Require.nonNull("Config", config);
+  }
+
+  /**
+   * Nodes and the Distributor must agree on this: a Node that registers through Temporal needs a
+   * Distributor that runs the {@link NodeMembershipWorkflow} Worker.
+   *
+   * @return true when Nodes register through Temporal instead of the event bus
+   */
+  public boolean isNodeRegistrationEnabled() {
+    return config.getBool(TEMPORAL_SECTION, "node-registration").orElse(false);
+  }
+
+  /**
+   * Connects to the Temporal Service. Callers shut down the connection with {@code
+   * client.getWorkflowServiceStubs().shutdown()}.
+   *
+   * @return a client for the configured namespace
+   */
+  public WorkflowClient connect() {
+    String target = getTarget();
+    WorkflowServiceStubsOptions.Builder stubs =
+        WorkflowServiceStubsOptions.newBuilder().setTarget(target);
+    // Temporal Cloud: TLS plus the API key on every call. A local server needs neither.
+    getApiKey().ifPresent(apiKey -> stubs.setEnableHttps(true).addApiKey(() -> apiKey));
+    WorkflowServiceStubs service;
+    try {
+      service = WorkflowServiceStubs.newConnectedServiceStubs(stubs.build(), CONNECT_TIMEOUT);
+    } catch (RuntimeException e) {
+      throw new ConfigException(
+          "Unable to reach the Temporal Service at %s. For local use, run `temporal server"
+              + " start-dev`. For Temporal Cloud, set --temporal-target, --temporal-namespace and"
+              + " the %s environment variable. Cause: %s",
+          target, API_KEY_ENV, e.getMessage());
+    }
+    return WorkflowClient.newInstance(
+        service, WorkflowClientOptions.newBuilder().setNamespace(getNamespace()).build());
   }
 
   public String getTarget() {
