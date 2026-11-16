@@ -72,7 +72,9 @@ import org.openqa.selenium.grid.sessionmap.SessionMap;
 import org.openqa.selenium.grid.sessionmap.local.LocalSessionMap;
 import org.openqa.selenium.grid.sessionqueue.NewSessionQueue;
 import org.openqa.selenium.grid.sessionqueue.local.LocalNewSessionQueue;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.grid.testing.PassthroughHttpClient;
+import org.openqa.selenium.grid.testing.TemporalTestService;
 import org.openqa.selenium.grid.testing.TestSessionFactory;
 import org.openqa.selenium.grid.web.CombinedHandler;
 import org.openqa.selenium.grid.web.Values;
@@ -101,6 +103,7 @@ class SessionCleanUpTest {
   private HttpClient.Factory clientFactory;
   private Secret registrationSecret;
   private Server<?> server;
+  private TemporalTestService temporal;
 
   @BeforeEach
   public void setup() {
@@ -116,6 +119,7 @@ class SessionCleanUpTest {
             true,
             registrationSecret);
     clientFactory = HttpClient.Factory.createDefault();
+    temporal = new TemporalTestService();
   }
 
   @AfterEach
@@ -127,6 +131,10 @@ class SessionCleanUpTest {
 
     if (bus != null) {
       bus.close();
+    }
+
+    if (temporal != null) {
+      temporal.close();
     }
   }
 
@@ -160,8 +168,10 @@ class SessionCleanUpTest {
             false,
             Duration.ofSeconds(5),
             Runtime.getRuntime().availableProcessors(),
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
+            new DefaultSlotMatcher())) {
+      distributor.registerNodesThroughTemporal(
+          new TemporalOptions(
+              new MapConfig(Map.of("temporal", Map.of("target", temporal.getTarget())))));
       handler.addHandler(distributor);
 
       Router router = new Router(tracer, clientFactory, sessions, queue, distributor);
@@ -181,6 +191,7 @@ class SessionCleanUpTest {
               new StringReader(
                   "[node]\n"
                       + "detect-drivers = false\n"
+                      + "heartbeat-period = 1\n"
                       + "driver-factories = [\n"
                       + String.format("\"%s\",", LocalTestSessionFactory.class.getName())
                       + "\n"
@@ -198,7 +209,9 @@ class SessionCleanUpTest {
             "relax-checks = true",
             "",
             "[server]",
-            "registration-secret = \"hereford hop\""
+            "registration-secret = \"hereford hop\"",
+            "",
+            temporal.toml()
           };
 
       Config nodeConfig =
@@ -284,8 +297,7 @@ class SessionCleanUpTest {
             false,
             Duration.ofSeconds(5),
             Runtime.getRuntime().availableProcessors(),
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
+            new DefaultSlotMatcher())) {
       handler.addHandler(distributor);
       distributor.add(node);
 

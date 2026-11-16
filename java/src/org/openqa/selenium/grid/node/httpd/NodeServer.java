@@ -22,20 +22,16 @@ import static java.net.HttpURLConnection.HTTP_UNAVAILABLE;
 import static org.openqa.selenium.grid.config.StandardGridRoles.EVENT_BUS_ROLE;
 import static org.openqa.selenium.grid.config.StandardGridRoles.HTTPD_ROLE;
 import static org.openqa.selenium.grid.config.StandardGridRoles.NODE_ROLE;
-import static org.openqa.selenium.grid.data.Availability.DOWN;
 import static org.openqa.selenium.remote.http.Route.get;
 
 import com.google.auto.service.AutoService;
 import com.google.common.net.MediaType;
-import dev.failsafe.Failsafe;
-import dev.failsafe.RetryPolicy;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jspecify.annotations.Nullable;
@@ -47,12 +43,9 @@ import org.openqa.selenium.grid.config.CompoundConfig;
 import org.openqa.selenium.grid.config.Config;
 import org.openqa.selenium.grid.config.MemoizedConfig;
 import org.openqa.selenium.grid.config.Role;
-import org.openqa.selenium.grid.data.NodeAddedEvent;
 import org.openqa.selenium.grid.data.NodeDrainComplete;
 import org.openqa.selenium.grid.data.NodeRemovedEvent;
-import org.openqa.selenium.grid.data.NodeStatusEvent;
 import org.openqa.selenium.grid.log.LoggingOptions;
-import org.openqa.selenium.grid.node.HealthCheck;
 import org.openqa.selenium.grid.node.Node;
 import org.openqa.selenium.grid.node.ProxyNodeWebsockets;
 import org.openqa.selenium.grid.node.config.NodeOptions;
@@ -60,6 +53,8 @@ import org.openqa.selenium.grid.server.BaseServerOptions;
 import org.openqa.selenium.grid.server.EventBusOptions;
 import org.openqa.selenium.grid.server.NetworkOptions;
 import org.openqa.selenium.grid.server.Server;
+import org.openqa.selenium.grid.temporal.NodeMembershipSpec;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.netty.server.NettyServer;
 import org.openqa.selenium.remote.http.Contents;
@@ -75,6 +70,7 @@ public class NodeServer extends TemplateGridServerCommand {
   private static final Logger LOG = Logger.getLogger(NodeServer.class.getName());
   private @Nullable Node node;
   private @Nullable EventBus bus;
+  private @Nullable NodeMembershipClient membership;
   private final Thread shutdownHook =
       new Thread(() -> bus.fire(new NodeRemovedEvent(node.getStatus())));
 
@@ -142,14 +138,6 @@ public class NodeServer extends TemplateGridServerCommand {
         };
 
     bus.addListener(
-        NodeAddedEvent.listener(nodeId -> {
-          if (node.getId().equals(nodeId)) {
-            node.register();
-            LOG.info("Node has been added");
-          }
-        }));
-
-    bus.addListener(
         NodeDrainComplete.listener(nodeId -> {
           if (!node.getId().equals(nodeId)) {
             return;
@@ -203,48 +191,7 @@ public class NodeServer extends TemplateGridServerCommand {
       public NettyServer start() {
         super.start();
 
-        // Unlimited attempts, every X seconds, we assume a Node should not need more than Y minutes
-        // to register
-        // X defaults to 10s and Y to 120 seconds, but the user can overwrite that.
-        RetryPolicy<Object> registrationPolicy =
-            RetryPolicy.builder()
-                .withMaxAttempts(-1)
-                .withMaxDuration(nodeOptions.getRegisterPeriod())
-                .withDelay(nodeOptions.getRegisterCycle())
-                .handleResultIf(result -> true)
-                .onFailure(event -> {
-                  LOG.severe(
-                      String.format(
-                          "Registration event failed after period of %s seconds. Node will not"
-                              + " attempt to register again",
-                          nodeOptions.getRegisterPeriod().getSeconds()));
-                  if (nodeOptions.getRegisterShutdownOnFailure()) {
-                    LOG.severe("Shutting down");
-                    System.exit(1);
-                  }
-                })
-                .build();
-
-        LOG.info("Starting registration process for Node " + node.getUri());
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-          Failsafe.with(registrationPolicy)
-              .run(() -> {
-                if (node.isRegistered()) {
-                  throw new InterruptedException("Stopping registration thread.");
-                }
-                HealthCheck.Result check = node.getHealthCheck().check();
-                if (DOWN.equals(check.getAvailability())) {
-                  LOG.severe("Node is not alive: " + check.getMessage());
-                  // Throw an exception to force another check sooner.
-                  throw new UnsupportedOperationException("Node cannot be registered");
-                }
-                bus.fire(new NodeStatusEvent(node.getStatus()));
-                LOG.info("Sending registration event...");
-              });
-        });
-        executor.shutdown();
-
+        registerThroughTemporal(new TemporalOptions(config), nodeOptions);
         return this;
       }
 
@@ -253,6 +200,11 @@ public class NodeServer extends TemplateGridServerCommand {
         try {
           handler.close();
         } finally {
+          // Stops the heartbeats, so the Distributor removes this Node.
+          NodeMembershipClient running = membership;
+          if (running != null) {
+            running.close();
+          }
           super.stop();
         }
       }
@@ -281,5 +233,45 @@ public class NodeServer extends TemplateGridServerCommand {
         String.format(
             "Started Selenium node %s (revision %s): %s",
             info.getReleaseLabel(), info.getBuildRevision(), server.getUrl()));
+  }
+
+  /**
+   * One call returns the Distributor's answer. Heartbeat Signals then keep the Node in the Grid.
+   */
+  private void registerThroughTemporal(TemporalOptions temporal, NodeOptions nodeOptions) {
+    Node node = Require.nonNull("Node", this.node);
+    NodeMembershipSpec spec = new NodeMembershipSpec();
+    spec.nodeId = node.getId().toString();
+    spec.nodeUri = node.getUri().toString();
+    spec.heartbeatPeriodSeconds = nodeOptions.getHeartbeatPeriod().getSeconds();
+    spec.registerPeriodSeconds = nodeOptions.getRegisterPeriod().getSeconds();
+    NodeMembershipClient membership = new NodeMembershipClient(temporal.connect(), spec);
+    this.membership = membership;
+
+    // Registration can wait for the whole register period, so it runs off the startup thread.
+    LOG.info("Registering Node " + node.getUri() + " through Temporal");
+    new Thread(() -> joinGrid(node, membership, nodeOptions), "Node registration").start();
+  }
+
+  /** Registers the Node, logs the Distributor's answer, and starts the heartbeats when accepted. */
+  private static void joinGrid(
+      Node node, NodeMembershipClient membership, NodeOptions nodeOptions) {
+    Optional<String> rejection = membership.register();
+    if (membership.isClosed()) {
+      // The Node is stopping. Its registration was cut short on purpose.
+      return;
+    }
+    if (rejection.isPresent()) {
+      LOG.severe("Node registration failed. " + rejection.get());
+      if (nodeOptions.getRegisterShutdownOnFailure()) {
+        LOG.severe("Shutting down");
+        System.exit(1);
+      }
+      return;
+    }
+    // Only sets the Node's "registered" flag. The Distributor already added it.
+    node.register();
+    LOG.info("The Distributor accepted the Node");
+    membership.startHeartbeats();
   }
 }

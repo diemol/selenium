@@ -90,6 +90,19 @@ public class Docker {
             .orElseThrow(() -> new DockerException("Unable to inspect container: " + id)));
   }
 
+  /**
+   * Returns a handle to an existing container. It does not check that the container exists.
+   *
+   * @param id the container id or name
+   * @return the container handle
+   */
+  public Container getContainer(ContainerId id) {
+    Require.nonNull("Container id", id);
+    return getDocker()
+        .map(protocol -> new Container(protocol, id))
+        .orElseThrow(() -> new DockerException("Unable to get container " + id));
+  }
+
   private Optional<DockerProtocol> getDocker() {
     if (dockerClient.isPresent()) {
       return dockerClient;

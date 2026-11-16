@@ -80,8 +80,7 @@ public class DistributorDrainingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     local.add(node);
     waitToHaveCapacity(local);
 
@@ -139,8 +138,7 @@ public class DistributorDrainingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     local.add(node);
     waitToHaveCapacity(local);
 
@@ -211,8 +209,7 @@ public class DistributorDrainingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     local.add(node);
     waitToHaveCapacity(local);
 
@@ -262,8 +259,7 @@ public class DistributorDrainingTest extends DistributorTestBase {
             false,
             Duration.ofSeconds(5),
             newSessionThreadPoolSize,
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30));
+            new DefaultSlotMatcher());
     local.add(node);
     local.drain(node.getId());
 
