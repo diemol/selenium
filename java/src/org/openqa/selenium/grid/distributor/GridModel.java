@@ -42,29 +42,11 @@ public abstract class GridModel {
   public abstract void add(NodeStatus node);
 
   /**
-   * Refreshes a node's status in the grid model.
-   *
-   * @param status The updated node status
-   */
-  public abstract void refresh(NodeStatus status);
-
-  /**
-   * Updates the timestamp for a node to prevent it from being considered stale. May also update the
-   * node's availability if reported differently.
-   *
-   * @param nodeStatus The node status to update
-   */
-  public abstract void touch(NodeStatus nodeStatus);
-
-  /**
    * Removes a node from the grid model.
    *
    * @param id The ID of the node to remove
    */
   public abstract void remove(NodeId id);
-
-  /** Removes nodes that have been unresponsive for too long. */
-  public abstract void purgeDeadNodes();
 
   /**
    * Sets the availability status for a node.

@@ -17,6 +17,7 @@
 
 package org.openqa.selenium.docker.client;
 
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static org.openqa.selenium.docker.client.DockerMessages.throwIfNecessary;
 import static org.openqa.selenium.remote.http.HttpMethod.POST;
 
@@ -24,6 +25,7 @@ import org.openqa.selenium.docker.ContainerId;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.remote.http.HttpHandler;
 import org.openqa.selenium.remote.http.HttpRequest;
+import org.openqa.selenium.remote.http.HttpResponse;
 
 class StartContainer {
   private final HttpHandler client;
@@ -37,11 +39,14 @@ class StartContainer {
   public void apply(ContainerId id) {
     Require.nonNull("Container id", id);
 
-    throwIfNecessary(
+    HttpResponse response =
         client.execute(
             new HttpRequest(POST, String.format("/v%s/containers/%s/start", apiVersion, id))
-                .addHeader("Content-Type", "text/plain")),
-        "Unable to start container: %s",
-        id);
+                .addHeader("Content-Type", "text/plain"));
+    // 304 means the container is already running, so starting it again is a no-op.
+    if (response.getStatus() == HTTP_NOT_MODIFIED) {
+      return;
+    }
+    throwIfNecessary(response, "Unable to start container: %s", id);
   }
 }

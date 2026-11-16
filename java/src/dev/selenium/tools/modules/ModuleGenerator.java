@@ -108,10 +108,16 @@ public class ModuleGenerator {
     Map<String, Set<String>> opensTo = new TreeMap<>();
     Set<String> openTo = new TreeSet<>();
     boolean isOpen = false;
+    boolean ignoreMissingDeps = false;
 
     int argCount = args.length;
     for (int i = 0; i < argCount; i++) {
       String flag = args[i];
+      if ("--ignore-missing-deps".equals(flag)) {
+        // Some dependencies were left off the module path, so jdeps cannot resolve their classes.
+        ignoreMissingDeps = true;
+        continue;
+      }
       String next = args[++i];
       switch (flag) {
         case "--exports":
@@ -168,6 +174,9 @@ public class ModuleGenerator {
 
     // It doesn't matter what we use for writing to the stream: jdeps doesn't use it. *facepalm*
     List<String> jdepsArgs = new LinkedList<>(List.of("--api-only", "--multi-release", "9"));
+    if (ignoreMissingDeps) {
+      jdepsArgs.add("--ignore-missing-deps");
+    }
     if (!modulePath.isEmpty()) {
       Path tmp = Files.createTempDirectory("automatic_module_jars");
       jdepsArgs.addAll(

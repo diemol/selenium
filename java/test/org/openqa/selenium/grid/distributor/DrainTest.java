@@ -32,6 +32,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
@@ -43,6 +45,7 @@ import org.openqa.selenium.grid.config.MemoizedConfig;
 import org.openqa.selenium.grid.config.TomlConfig;
 import org.openqa.selenium.grid.node.httpd.NodeServer;
 import org.openqa.selenium.grid.server.Server;
+import org.openqa.selenium.grid.testing.TemporalTestService;
 import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.net.UrlChecker;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -52,6 +55,17 @@ import org.openqa.selenium.testing.drivers.Browser;
 class DrainTest {
 
   private final Browser browser = Objects.requireNonNull(Browser.detect());
+  private TemporalTestService temporal;
+
+  @BeforeEach
+  void startTemporal() {
+    temporal = new TemporalTestService();
+  }
+
+  @AfterEach
+  void stopTemporal() {
+    temporal.close();
+  }
 
   @Disabled("the Node is terminated calling System.exit, this should be reworked in the future")
   @Test
@@ -63,7 +77,9 @@ class DrainTest {
           "subscribe = \"tcp://localhost:" + PortProber.findFreePort() + "\"",
           "",
           "[server]",
-          "registration-secret = \"feta\""
+          "registration-secret = \"feta\"",
+          "",
+          temporal.toml()
         };
 
     Config baseConfig =
@@ -153,7 +169,9 @@ class DrainTest {
           "subscribe = \"tcp://localhost:" + PortProber.findFreePort() + "\"",
           "",
           "[server]",
-          "registration-secret = \"feta\""
+          "registration-secret = \"feta\"",
+          "",
+          temporal.toml()
         };
 
     Config baseConfig =

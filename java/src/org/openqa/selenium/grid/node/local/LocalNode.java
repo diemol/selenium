@@ -91,7 +91,6 @@ import org.openqa.selenium.grid.data.CreateSessionRequest;
 import org.openqa.selenium.grid.data.CreateSessionResponse;
 import org.openqa.selenium.grid.data.NodeDrainComplete;
 import org.openqa.selenium.grid.data.NodeDrainStarted;
-import org.openqa.selenium.grid.data.NodeHeartBeatEvent;
 import org.openqa.selenium.grid.data.NodeId;
 import org.openqa.selenium.grid.data.NodeStatus;
 import org.openqa.selenium.grid.data.Session;
@@ -290,22 +289,9 @@ public class LocalNode extends Node implements Closeable {
     downloadTempFileCleanupNodeService.scheduleAtFixedRate(
         GuardedRunnable.guard(downloadsTempFileSystem::cleanUp), 30, 30, TimeUnit.SECONDS);
 
-    ScheduledExecutorService heartbeatNodeService =
-        Executors.newSingleThreadScheduledExecutor(r -> {
-          Thread thread = new Thread(r);
-          thread.setDaemon(true);
-          thread.setName("HeartBeat Node " + externalUri);
-          return thread;
-        });
-    heartbeatNodeService.scheduleAtFixedRate(
-        GuardedRunnable.guard(() -> bus.fire(new NodeHeartBeatEvent(getStatus()))),
-        heartbeatPeriod.getSeconds(),
-        heartbeatPeriod.getSeconds(),
-        TimeUnit.SECONDS);
-
     shutdown =
         () -> {
-          if (heartbeatNodeService.isShutdown()) return;
+          if (sessionCleanupNodeService.isShutdown()) return;
 
           shutdownGracefully(
               "Local Node - Session Cleanup " + externalUri, sessionCleanupNodeService);
@@ -313,7 +299,6 @@ public class LocalNode extends Node implements Closeable {
               "UploadTempFile Cleanup Node " + externalUri, uploadTempFileCleanupNodeService);
           shutdownGracefully(
               "DownloadTempFile Cleanup Node " + externalUri, downloadTempFileCleanupNodeService);
-          shutdownGracefully("HeartBeat Node " + externalUri, heartbeatNodeService);
 
           // ensure we do not leak running browsers
           currentSessions.invalidateAll();

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.openqa.selenium.ImmutableCapabilities;
 import org.openqa.selenium.grid.config.Config;
@@ -95,9 +96,12 @@ public class LocalNodeFactory {
                 nodeOptions.getSlotMatcher()))
         .forEach((caps, factories) -> factories.forEach(factory -> builder.add(caps, factory)));
 
+    // Filled in once the Node is built. Docker session Workflows ask it which sessions are live.
+    AtomicReference<Node> node = new AtomicReference<>();
+
     if (config.getAll("docker", "configs").isPresent()) {
       new DockerOptions(config)
-          .getDockerSessionFactories(tracer, clientFactory, nodeOptions)
+          .getDockerSessionFactories(tracer, clientFactory, nodeOptions, node::get)
           .forEach((caps, factories) -> factories.forEach(factory -> builder.add(caps, factory)));
     }
 
@@ -139,7 +143,9 @@ public class LocalNodeFactory {
           .forEach((caps, factories) -> factories.forEach(factory -> builder.add(caps, factory)));
     }
 
-    return builder.build();
+    LocalNode localNode = builder.build();
+    node.set(localNode);
+    return localNode;
   }
 
   private static Collection<SessionFactory> createSessionFactory(
