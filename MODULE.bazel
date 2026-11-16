@@ -231,6 +231,7 @@ maven.install(
         "io.opentelemetry:opentelemetry-sdk-trace",
         "io.temporal:temporal-sdk:1.40.0",
         "io.temporal:temporal-serviceclient:1.40.0",
+        "io.temporal:temporal-test-server:1.40.0",
         "io.temporal:temporal-testing:1.40.0",
         "org.testcontainers:testcontainers:2.0.5",
         "net.bytebuddy:byte-buddy:1.18.17",

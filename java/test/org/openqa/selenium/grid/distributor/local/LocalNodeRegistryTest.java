@@ -18,14 +18,17 @@
 package org.openqa.selenium.grid.distributor.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openqa.selenium.grid.data.Availability.DOWN;
 import static org.openqa.selenium.grid.data.Availability.UP;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,7 +65,6 @@ class LocalNodeRegistryTest {
   private Tracer tracer;
   private EventBus bus;
   private ScheduledExecutorService nodeHealthCheckService;
-  private ScheduledExecutorService purgeDeadNodesService;
   private LocalNodeRegistry registry;
 
   @BeforeEach
@@ -70,7 +72,6 @@ class LocalNodeRegistryTest {
     tracer = DefaultTestTracer.createTracer();
     bus = new GuavaEventBus();
     nodeHealthCheckService = Executors.newSingleThreadScheduledExecutor();
-    purgeDeadNodesService = Executors.newSingleThreadScheduledExecutor();
     registry =
         new LocalNodeRegistry(
             tracer,
@@ -80,9 +81,7 @@ class LocalNodeRegistryTest {
             },
             registrationSecret,
             Duration.ofHours(1),
-            nodeHealthCheckService,
-            Duration.ZERO,
-            purgeDeadNodesService);
+            nodeHealthCheckService);
   }
 
   @AfterEach
@@ -93,9 +92,6 @@ class LocalNodeRegistryTest {
     }
     if (nodeHealthCheckService != null) {
       nodeHealthCheckService.shutdownNow();
-    }
-    if (purgeDeadNodesService != null) {
-      purgeDeadNodesService.shutdownNow();
     }
     if (bus != null) {
       bus.close();
@@ -183,6 +179,29 @@ class LocalNodeRegistryTest {
     } finally {
       runner.shutdownNow();
     }
+  }
+
+  @Test
+  void reportsANodeThatKeepsFailingHealthChecks() {
+    NodeId nodeId = new NodeId(UUID.randomUUID());
+    List<NodeId> unhealthy = new CopyOnWriteArrayList<>();
+    registry.onUnhealthyNode(unhealthy::add);
+    registry.add(
+        new TestNode(
+            tracer,
+            nodeId,
+            URI.create("http://example:4444"),
+            registrationSecret,
+            () -> new HealthCheck.Result(DOWN, "not ok")));
+
+    // The same threshold the purge used: more than 4 failed checks in a row.
+    for (int i = 0; i < 4; i++) {
+      registry.runHealthChecks();
+    }
+    assertThat(unhealthy).isEmpty();
+
+    registry.runHealthChecks();
+    assertThat(unhealthy).containsExactly(nodeId);
   }
 
   @Test

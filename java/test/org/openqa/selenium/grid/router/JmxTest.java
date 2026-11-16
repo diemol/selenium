@@ -241,8 +241,7 @@ class JmxTest {
             false,
             Duration.ofSeconds(5),
             Runtime.getRuntime().availableProcessors(),
-            new DefaultSlotMatcher(),
-            Duration.ofSeconds(30))) {
+            new DefaultSlotMatcher())) {
 
       distributor.add(localNode);
 

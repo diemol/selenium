@@ -15,13 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package org.openqa.selenium.grid.node.docker;
+package org.openqa.selenium.grid.temporal;
 
+import static org.openqa.selenium.grid.config.StandardGridRoles.DISTRIBUTOR_ROLE;
 import static org.openqa.selenium.grid.config.StandardGridRoles.NODE_ROLE;
 
 import com.beust.jcommander.Parameter;
 import com.google.auto.service.AutoService;
-import java.util.Collections;
 import java.util.Set;
 import org.openqa.selenium.grid.config.ConfigValue;
 import org.openqa.selenium.grid.config.HasRoles;
@@ -34,7 +34,7 @@ public class TemporalFlags implements HasRoles {
   @Parameter(
       names = {"--temporal-target"},
       description =
-          "Address of the Temporal Service that runs the Docker session Workflows. For Temporal"
+          "Address of the Temporal Service that runs the Grid Workflows. For Temporal"
               + " Cloud, use the endpoint from the Cloud UI and set the TEMPORAL_API_KEY"
               + " environment variable.")
   @ConfigValue(
@@ -45,7 +45,7 @@ public class TemporalFlags implements HasRoles {
 
   @Parameter(
       names = {"--temporal-namespace"},
-      description = "Temporal namespace for the Docker session Workflows")
+      description = "Temporal namespace for the Grid Workflows")
   @ConfigValue(
       section = TemporalOptions.TEMPORAL_SECTION,
       name = "namespace",
@@ -55,8 +55,8 @@ public class TemporalFlags implements HasRoles {
   @Parameter(
       names = {"--temporal-task-queue"},
       description =
-          "Task queue of this Node. Must be unique per Node and stay the same across restarts."
-              + " Defaults to selenium-docker-node-<hostname>.")
+          "Task queue of this Docker Node. Must be unique per Docker Node and stay the same"
+              + " across restarts. Defaults to selenium-docker-node-<hostname>.")
   @ConfigValue(
       section = TemporalOptions.TEMPORAL_SECTION,
       name = "task-queue",
@@ -65,6 +65,6 @@ public class TemporalFlags implements HasRoles {
 
   @Override
   public Set<Role> getRoles() {
-    return Collections.singleton(NODE_ROLE);
+    return Set.of(NODE_ROLE, DISTRIBUTOR_ROLE);
   }
 }

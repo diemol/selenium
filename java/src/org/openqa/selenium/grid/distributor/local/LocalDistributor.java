@@ -28,8 +28,11 @@ import static org.openqa.selenium.remote.tracing.AttributeKey.SESSION_URI;
 import static org.openqa.selenium.remote.tracing.Tags.EXCEPTION;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowNotFoundException;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.time.Duration;
@@ -74,7 +77,6 @@ import org.openqa.selenium.grid.data.SlotId;
 import org.openqa.selenium.grid.data.SlotMatcher;
 import org.openqa.selenium.grid.data.TraceSessionRequest;
 import org.openqa.selenium.grid.distributor.Distributor;
-import org.openqa.selenium.grid.distributor.NodeRegistry;
 import org.openqa.selenium.grid.distributor.config.DistributorOptions;
 import org.openqa.selenium.grid.distributor.selector.SlotSelector;
 import org.openqa.selenium.grid.jmx.JMXHelper;
@@ -90,6 +92,9 @@ import org.openqa.selenium.grid.sessionmap.SessionMap;
 import org.openqa.selenium.grid.sessionmap.config.SessionMapOptions;
 import org.openqa.selenium.grid.sessionqueue.NewSessionQueue;
 import org.openqa.selenium.grid.sessionqueue.config.NewSessionQueueOptions;
+import org.openqa.selenium.grid.temporal.NodeMembershipSpec;
+import org.openqa.selenium.grid.temporal.NodeMembershipWorkflow;
+import org.openqa.selenium.grid.temporal.TemporalOptions;
 import org.openqa.selenium.internal.Either;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.remote.SessionId;
@@ -116,25 +121,16 @@ public class LocalDistributor extends Distributor implements Closeable {
   private final SlotSelector slotSelector;
   private final Secret registrationSecret;
   private final Duration healthcheckInterval;
-  private final NodeRegistry nodeRegistry;
+  private final LocalNodeRegistry nodeRegistry;
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock(/* fair */ true);
   private final SlotMatcher slotMatcher;
-  private final Duration purgeNodesInterval;
 
   private final ScheduledExecutorService newSessionService =
       Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
         thread.setName("Local Distributor - New Session Queue");
-        return thread;
-      });
-
-  private final ScheduledExecutorService purgeDeadNodesService =
-      Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        thread.setName("Local Distributor - Purge Dead Nodes");
         return thread;
       });
 
@@ -152,6 +148,8 @@ public class LocalDistributor extends Distributor implements Closeable {
 
   private final boolean rejectUnsupportedCaps;
 
+  private volatile @Nullable WorkerFactory membershipWorkers;
+
   public LocalDistributor(
       Tracer tracer,
       EventBus bus,
@@ -164,8 +162,7 @@ public class LocalDistributor extends Distributor implements Closeable {
       boolean rejectUnsupportedCaps,
       Duration sessionRequestRetryInterval,
       int newSessionThreadPoolSize,
-      SlotMatcher slotMatcher,
-      Duration purgeNodesInterval) {
+      SlotMatcher slotMatcher) {
     super(tracer, clientFactory, registrationSecret);
     this.tracer = Require.nonNull("Tracer", tracer);
     this.bus = Require.nonNull("Event bus", bus);
@@ -177,7 +174,6 @@ public class LocalDistributor extends Distributor implements Closeable {
     this.healthcheckInterval = Require.nonNull("Health check interval", healthcheckInterval);
     this.rejectUnsupportedCaps = rejectUnsupportedCaps;
     this.slotMatcher = slotMatcher;
-    this.purgeNodesInterval = purgeNodesInterval;
     Require.nonNull("Session request interval", sessionRequestRetryInterval);
 
     this.nodeRegistry =
@@ -187,9 +183,7 @@ public class LocalDistributor extends Distributor implements Closeable {
             this.clientFactory,
             this.registrationSecret,
             this.healthcheckInterval,
-            this.nodeHealthCheckService,
-            this.purgeNodesInterval,
-            this.purgeDeadNodesService);
+            this.nodeHealthCheckService);
 
     sessionCreatorExecutor =
         new ThreadPoolExecutor(
@@ -231,20 +225,66 @@ public class LocalDistributor extends Distributor implements Closeable {
     NewSessionQueue sessionQueue =
         newSessionQueueOptions.getSessionQueue(
             "org.openqa.selenium.grid.sessionqueue.remote.RemoteNewSessionQueue");
-    return new LocalDistributor(
-        tracer,
-        bus,
-        clientFactory,
-        sessions,
-        sessionQueue,
-        distributorOptions.getSlotSelector(),
-        secretOptions.getRegistrationSecret(),
-        distributorOptions.getHealthCheckInterval(),
-        distributorOptions.shouldRejectUnsupportedCaps(),
-        newSessionQueueOptions.getSessionRequestRetryInterval(),
-        distributorOptions.getNewSessionThreadPoolSize(),
-        distributorOptions.getSlotMatcher(),
-        distributorOptions.getPurgeNodesInterval());
+    LocalDistributor distributor =
+        new LocalDistributor(
+            tracer,
+            bus,
+            clientFactory,
+            sessions,
+            sessionQueue,
+            distributorOptions.getSlotSelector(),
+            secretOptions.getRegistrationSecret(),
+            distributorOptions.getHealthCheckInterval(),
+            distributorOptions.shouldRejectUnsupportedCaps(),
+            newSessionQueueOptions.getSessionRequestRetryInterval(),
+            distributorOptions.getNewSessionThreadPoolSize(),
+            distributorOptions.getSlotMatcher());
+    distributor.registerNodesThroughTemporal(new TemporalOptions(config));
+    return distributor;
+  }
+
+  /**
+   * Nodes join, go DOWN, come back, and leave only through their {@link NodeMembershipWorkflow}.
+   *
+   * @param temporal where the Temporal Service is
+   */
+  public void registerNodesThroughTemporal(TemporalOptions temporal) {
+    WorkflowClient client = temporal.connect();
+    nodeRegistry.onUnhealthyNode(id -> reportUnhealthy(client, id));
+
+    WorkerFactory factory = WorkerFactory.newInstance(client);
+    Worker worker = factory.newWorker(NodeMembershipWorkflow.TASK_QUEUE);
+    worker.registerWorkflowImplementationTypes(NodeMembershipWorkflowImpl.class);
+    worker.registerActivitiesImplementations(
+        new NodeMembershipActivitiesImpl(nodeRegistry, clientFactory, registrationSecret));
+    factory.start();
+    membershipWorkers = factory;
+    LOG.info(
+        String.format(
+            "Nodes register through Temporal (target %s, namespace %s, task queue %s)",
+            temporal.getTarget(), temporal.getNamespace(), NodeMembershipWorkflow.TASK_QUEUE));
+  }
+
+  /**
+   * The Node's Workflow removes it. A Node added without a Workflow, for example with {@link
+   * #add(Node)}, is removed at once.
+   */
+  private void reportUnhealthy(WorkflowClient client, NodeId id) {
+    try {
+      client
+          .newWorkflowStub(
+              NodeMembershipWorkflow.class, NodeMembershipSpec.workflowId(id.toString()))
+          .unhealthy();
+    } catch (WorkflowNotFoundException e) {
+      nodeRegistry.removeAndNotify(id);
+    }
+  }
+
+  private void stopMembershipWorkers() {
+    WorkerFactory factory = membershipWorkers;
+    if (factory != null) {
+      factory.shutdownNow();
+    }
   }
 
   @Override
@@ -517,16 +557,12 @@ public class LocalDistributor extends Distributor implements Closeable {
 
   @Override
   public void close() {
+    stopMembershipWorkers();
     LOG.info("Shutting down Distributor executor service");
     shutdownGracefully("Local Distributor - New Session Queue", newSessionService);
     shutdownGracefully("Local Distributor - Session Creation", sessionCreatorExecutor);
     shutdownGracefully("Local Distributor - Node Health Check", nodeHealthCheckService);
-    shutdownGracefully("Local Distributor - Purge Dead Nodes", purgeDeadNodesService);
-    try {
-      nodeRegistry.close();
-    } catch (IOException e) {
-      LOG.log(Level.WARNING, "Unable to close node registry cleanly", e);
-    }
+    nodeRegistry.close();
   }
 
   private class NewSessionRunnable implements Runnable {
